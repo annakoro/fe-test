@@ -260,6 +260,6 @@ export function updateTokenPrice(existingToken: TokenData, newPrice: number): To
     ...existingToken,
     priceUsd: newPrice,
     mcap: updatedMcap,
-    lastUpdated: new Date(),
+    lastUpdated: new Date().toISOString(),
   };
 }

@@ -58,7 +58,7 @@ export const newTokensSlice = createSlice({
       if (state.tokens[tokenId]) {
         state.tokens[tokenId].priceUsd = priceUsd;
         state.tokens[tokenId].mcap = mcap;
-        state.tokens[tokenId].lastUpdated = timestamp;
+        state.tokens[tokenId].lastUpdated = timestamp.toISOString();
       }
     },
 
@@ -70,7 +70,7 @@ export const newTokensSlice = createSlice({
           ...state.tokens[tokenId].audit,
           ...audit,
         };
-        state.tokens[tokenId].lastUpdated = timestamp;
+        state.tokens[tokenId].lastUpdated = timestamp.toISOString();
       }
     },
 
@@ -113,7 +113,7 @@ export const newTokensSlice = createSlice({
         if (state.tokens[tokenId]) {
           state.tokens[tokenId].priceUsd = priceUsd;
           state.tokens[tokenId].mcap = mcap;
-          state.tokens[tokenId].lastUpdated = timestamp;
+          state.tokens[tokenId].lastUpdated = timestamp.toISOString();
         }
       });
 
@@ -124,7 +124,7 @@ export const newTokensSlice = createSlice({
             ...state.tokens[tokenId].audit,
             ...audit,
           };
-          state.tokens[tokenId].lastUpdated = timestamp;
+          state.tokens[tokenId].lastUpdated = timestamp.toISOString();
         }
       });
     },
@@ -137,7 +137,7 @@ export const newTokensSlice = createSlice({
       
       Object.entries(state.tokens).forEach(([tokenId, token]) => {
         if (token.lastUpdated) {
-          const age = now.getTime() - token.lastUpdated.getTime();
+          const age = now.getTime() - new Date(token.lastUpdated).getTime();
           if (age > maxAge) {
             tokensToRemove.push(tokenId);
           }

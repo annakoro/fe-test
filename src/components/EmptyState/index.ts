@@ -1,2 +1,1 @@
-export { EmptyState } from './EmptyState';
-export { default } from './EmptyState';
+export { EmptyState, default } from './EmptyState';

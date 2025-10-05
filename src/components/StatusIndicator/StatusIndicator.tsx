@@ -99,5 +99,3 @@ export const StatusIndicator: React.FC<StatusIndicatorProps> = ({
     </StatusContainer>
   );
 };
-
-export default StatusIndicator;
