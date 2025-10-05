@@ -1,6 +1,6 @@
 // Data transformation utilities for converting ScannerResult to TokenData
 
-import { ScannerResult } from '../types/api';
+import { ScannerResult, ScannerApiResponse } from '../types/api';
 import { TokenData } from '../types/token';
 import { chainIdToName } from './chainUtils';
 
@@ -68,19 +68,46 @@ export function safeParseFloat(value: string, fallback: number = 0): number {
 }
 
 /**
- * Validates required fields in ScannerResult
+ * Validates required fields in ScannerResult for basic API response validation
+ * @param result - Scanner result to validate
+ * @returns True if all required fields are present and not empty
+ */
+export function isValidScannerResult(result: any): boolean {
+  const requiredFields = [
+    'pairAddress',
+    'token1Name',
+    'token1Symbol',
+    'token1Address',
+    'chainId',
+    'routerAddress',
+    'price',
+    'volume',
+    'age'
+  ];
+
+  return requiredFields.every(field => 
+    result[field] !== undefined && result[field] !== null && result[field] !== ''
+  );
+}
+
+/**
+ * Validates required fields in ScannerResult with type checking for data transformation
  * @param result - Scanner result to validate
  * @returns True if all required fields are present and valid
  */
 export function validateScannerResult(result: ScannerResult): boolean {
-  // Check required string fields
+  // First check basic field presence
+  if (!isValidScannerResult(result)) {
+    return false;
+  }
+
+  // Check required string fields have correct types
   const requiredStringFields = [
     'pairAddress', 'token1Name', 'token1Symbol', 'token1Address', 'price'
   ];
   
   for (const field of requiredStringFields) {
-    if (!result[field as keyof ScannerResult] || 
-        typeof result[field as keyof ScannerResult] !== 'string') {
+    if (typeof result[field as keyof ScannerResult] !== 'string') {
       return false;
     }
   }
@@ -173,6 +200,37 @@ export function transformScannerResults(results: ScannerResult[]): TokenData[] {
   return results
     .map(transformScannerResult)
     .filter((token): token is TokenData => token !== null);
+}
+
+/**
+ * Validates and transforms raw API response data to ScannerApiResponse format
+ * @param data - Raw API response data
+ * @returns Validated and transformed scanner API response
+ * @throws Error if response format is invalid
+ */
+export function validateAndTransformApiResponse(data: any): ScannerApiResponse {
+  if (!data || typeof data !== 'object') {
+    throw new Error('Invalid response format');
+  }
+
+  if (!Array.isArray(data.results)) {
+    throw new Error('Missing or invalid results array');
+  }
+
+  // Filter out invalid results and warn about them
+  const validResults = data.results.filter((result: any) => {
+    const isValid = isValidScannerResult(result);
+    if (!isValid) {
+      console.warn('Invalid scanner result detected, skipping:', result);
+    }
+    return isValid;
+  });
+
+  return {
+    results: validResults,
+    hasMore: Boolean(data.hasMore),
+    page: Number(data.page) || 1,
+  };
 }
 
 /**

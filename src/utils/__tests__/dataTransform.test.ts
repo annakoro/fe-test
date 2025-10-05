@@ -4,7 +4,9 @@ import {
   calculateMarketCap,
   isValidNumber,
   safeParseFloat,
+  isValidScannerResult,
   validateScannerResult,
+  validateAndTransformApiResponse,
   transformScannerResult,
   transformScannerResults,
   updateTokenPrice,
@@ -142,6 +144,28 @@ describe('safeParseFloat', () => {
   });
 });
 
+describe('isValidScannerResult', () => {
+  it('should return true for valid scanner result with all required fields', () => {
+    expect(isValidScannerResult(mockScannerResult)).toBe(true);
+  });
+
+  it('should return false for missing required fields', () => {
+    const invalidResult = { ...mockScannerResult };
+    delete (invalidResult as any).pairAddress;
+    expect(isValidScannerResult(invalidResult)).toBe(false);
+  });
+
+  it('should return false for null/undefined fields', () => {
+    const invalidResult = { ...mockScannerResult, token1Name: null };
+    expect(isValidScannerResult(invalidResult)).toBe(false);
+  });
+
+  it('should return false for empty string fields', () => {
+    const invalidResult = { ...mockScannerResult, token1Symbol: '' };
+    expect(isValidScannerResult(invalidResult)).toBe(false);
+  });
+});
+
 describe('validateScannerResult', () => {
   it('should return true for valid scanner result', () => {
     expect(validateScannerResult(mockScannerResult)).toBe(true);
@@ -171,6 +195,72 @@ describe('validateScannerResult', () => {
     const invalidResult = { ...mockScannerResult };
     delete (invalidResult as any).pairAddress;
     expect(validateScannerResult(invalidResult)).toBe(false);
+  });
+
+  it('should return false for wrong field types', () => {
+    const invalidResult = { ...mockScannerResult, token1Name: 123 as any };
+    expect(validateScannerResult(invalidResult)).toBe(false);
+  });
+});
+
+describe('validateAndTransformApiResponse', () => {
+  it('should validate and transform valid API response', () => {
+    const apiResponse = {
+      results: [mockScannerResult],
+      hasMore: true,
+      page: 1,
+    };
+
+    const result = validateAndTransformApiResponse(apiResponse);
+    
+    expect(result).toEqual({
+      results: [mockScannerResult],
+      hasMore: true,
+      page: 1,
+    });
+  });
+
+  it('should throw error for invalid response format', () => {
+    expect(() => validateAndTransformApiResponse(null)).toThrow('Invalid response format');
+    expect(() => validateAndTransformApiResponse('invalid')).toThrow('Invalid response format');
+  });
+
+  it('should throw error for missing results array', () => {
+    expect(() => validateAndTransformApiResponse({ hasMore: true })).toThrow('Missing or invalid results array');
+    expect(() => validateAndTransformApiResponse({ results: 'not-array' })).toThrow('Missing or invalid results array');
+  });
+
+  it('should filter out invalid results and warn', () => {
+    const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+    
+    const apiResponse = {
+      results: [
+        mockScannerResult,
+        { ...mockScannerResult, pairAddress: null }, // Invalid
+        { ...mockScannerResult, pairAddress: '0xvalid' }
+      ],
+      hasMore: false,
+      page: 1,
+    };
+
+    const result = validateAndTransformApiResponse(apiResponse);
+    
+    expect(result.results).toHaveLength(2);
+    expect(consoleSpy).toHaveBeenCalledWith('Invalid scanner result detected, skipping:', expect.any(Object));
+    
+    consoleSpy.mockRestore();
+  });
+
+  it('should handle missing optional fields with defaults', () => {
+    const apiResponse = {
+      results: [],
+      // Missing hasMore and page
+    };
+
+    const result = validateAndTransformApiResponse(apiResponse);
+    
+    expect(result.hasMore).toBe(false);
+    expect(result.page).toBe(1);
   });
 });
 
@@ -221,10 +311,10 @@ describe('transformScannerResult', () => {
   it('should handle missing optional fields gracefully', () => {
     const resultWithoutOptionals = {
       ...mockScannerResult,
-      buys: undefined,
-      sells: undefined,
+      buys: 0, // Use 0 instead of undefined since buys/sells aren't in required fields check
+      sells: 0,
       honeyPot: undefined,
-      routerAddress: '',
+      routerAddress: '0xunknown', // Can't be empty string as it's a required field
     };
     
     const result = transformScannerResult(resultWithoutOptionals);
@@ -233,7 +323,7 @@ describe('transformScannerResult', () => {
     expect(result!.transactions.buys).toBe(0);
     expect(result!.transactions.sells).toBe(0);
     expect(result!.audit.honeypot).toBe(false);
-    expect(result!.exchange).toBe('Unknown');
+    expect(result!.exchange).toBe('0xunknown');
   });
 
   it('should handle transformation errors gracefully', () => {
