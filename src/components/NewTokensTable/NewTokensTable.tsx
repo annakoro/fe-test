@@ -15,6 +15,7 @@ import { apiService } from '../../services/apiService';
 import { createWebSocketService } from '../../services/webSocketService';
 import { transformScannerResult } from '../../utils/dataTransform';
 import { sortTokens } from '../../utils/sortingUtils';
+import { useSubscriptionManager } from '../../hooks/useSubscriptionManager';
 
 const TableContainer = styled.div`
   flex: 1;
@@ -44,6 +45,9 @@ export const NewTokensTable: React.FC<NewTokensTableProps> = ({
   const { tokens, sortConfig, loading, error, hasMore, page } = useSelector(
     (state: AppState) => state.newTokens
   );
+
+  // Track visible range for subscription management
+  const [visibleRange, setVisibleRange] = React.useState<{ startIndex: number; endIndex: number } | null>(null);
 
   // Helper function to get token value for comparison
   const getTokenValue = useCallback((token: TokenData, column: string): any => {
@@ -100,6 +104,18 @@ export const NewTokensTable: React.FC<NewTokensTableProps> = ({
     });
   }, [tokens, sortConfig, getTokenValue]);
 
+  // Initialize subscription manager for visible tokens
+  const {
+    subscriptionStats,
+    getSubscriptionStatus,
+    retryFailedSubscriptions
+  } = useSubscriptionManager({
+    webSocketService,
+    tokens: sortedTokens,
+    visibleRange: visibleRange || undefined,
+    enabled: webSocketService.getConnectionStatus() === 'connected'
+  });
+
   // Fetch initial data and subsequent pages
   const fetchTokens = useCallback(async (pageNum: number = 0, isLoadMore: boolean = false) => {
     try {
@@ -143,7 +159,7 @@ export const NewTokensTable: React.FC<NewTokensTableProps> = ({
     }
   }, [dispatch, filters]);
 
-  // Handle WebSocket subscriptions for new tokens
+  // Handle WebSocket subscriptions for new tokens (scanner-filter and pair-stats)
   useEffect(() => {
     const subscribeToNewTokens = () => {
       // Subscribe to scanner-filter for new tokens
@@ -162,23 +178,12 @@ export const NewTokensTable: React.FC<NewTokensTableProps> = ({
         }
       });
 
-      // Subscribe to pair-stats for audit updates
+      // Subscribe to pair-stats for audit updates (for all tokens, not just visible ones)
       Object.keys(tokens).forEach(tokenId => {
         webSocketService.subscribe({
           type: 'subscribe',
           payload: {
             room: 'pair-stats',
-            params: { pairAddress: tokenId }
-          }
-        });
-      });
-
-      // Subscribe to individual pair rooms for price updates
-      Object.keys(tokens).forEach(tokenId => {
-        webSocketService.subscribe({
-          type: 'subscribe',
-          payload: {
-            room: 'pair',
             params: { pairAddress: tokenId }
           }
         });
@@ -201,6 +206,11 @@ export const NewTokensTable: React.FC<NewTokensTableProps> = ({
       webSocketService.removeMessageCallback(handleWebSocketMessage);
     };
   }, [webSocketService, tokens, filters]);
+
+  // Handle visible range changes for subscription management
+  const handleVisibleRangeChange = useCallback((range: { startIndex: number; endIndex: number }) => {
+    setVisibleRange(range);
+  }, []);
 
   // Load initial data when component mounts or filters change
   useEffect(() => {
@@ -234,6 +244,7 @@ export const NewTokensTable: React.FC<NewTokensTableProps> = ({
         onLoadMore={handleLoadMore}
         loading={loading}
         error={error}
+        onVisibleRangeChange={handleVisibleRangeChange}
       />
     </TableContainer>
   );

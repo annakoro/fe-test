@@ -9,6 +9,7 @@ export interface VirtualizedTableProps {
   onLoadMore: () => void;
   loading: boolean;
   error: string | null;
+  onVisibleRangeChange?: (range: { startIndex: number; endIndex: number }) => void;
 }
 
 export interface TokenRowProps {

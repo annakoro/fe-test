@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { List } from 'react-window';
 import { useInfiniteLoader } from 'react-window-infinite-loader';
 import styled from 'styled-components';
@@ -51,8 +51,11 @@ export const VirtualizedTable: React.FC<VirtualizedTableProps> = ({
   onSort,
   onLoadMore,
   loading,
-  error
+  error,
+  onVisibleRangeChange
 }) => {
+  // Track visible range for subscription management
+  const [visibleRange, setVisibleRange] = useState<{ startIndex: number; endIndex: number } | null>(null);
   // Memoize the token array to prevent unnecessary re-renders
   const tokenArray = useMemo(() => tokens, [tokens]);
   
@@ -71,8 +74,19 @@ export const VirtualizedTable: React.FC<VirtualizedTableProps> = ({
     }
   }, [loading, onLoadMore]);
 
+  // Handle visible range changes for subscription management
+  const handleRowsRendered = useCallback(({ startIndex, endIndex }: { startIndex: number; endIndex: number }) => {
+    const newVisibleRange = { startIndex, endIndex };
+    setVisibleRange(newVisibleRange);
+    
+    // Notify parent component about visible range changes
+    if (onVisibleRangeChange) {
+      onVisibleRangeChange(newVisibleRange);
+    }
+  }, [onVisibleRangeChange]);
+
   // Use infinite loader hook
-  const onRowsRendered = useInfiniteLoader({
+  const infiniteLoaderOnRowsRendered = useInfiniteLoader({
     isRowLoaded: isItemLoaded,
     rowCount: itemCount,
     loadMoreRows: async () => {
@@ -80,6 +94,12 @@ export const VirtualizedTable: React.FC<VirtualizedTableProps> = ({
     },
     threshold: 10
   });
+
+  // Combine infinite loader and visible range handling
+  const onRowsRendered = useCallback((visibleRows: { startIndex: number; stopIndex: number }) => {
+    infiniteLoaderOnRowsRendered(visibleRows);
+    handleRowsRendered({ startIndex: visibleRows.startIndex, endIndex: visibleRows.stopIndex });
+  }, [infiniteLoaderOnRowsRendered, handleRowsRendered]);
 
   // Row renderer for react-window
   const RowRenderer: React.FC<RowRendererProps> = ({ index, style }) => {

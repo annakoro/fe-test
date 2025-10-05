@@ -6,12 +6,20 @@ import { newTokensSlice } from './slices/newTokensSlice';
 import { filtersSlice } from './slices/filtersSlice';
 import { webSocketMiddleware } from './middleware/webSocketMiddleware';
 
+const rootReducer = {
+  trendingTokens: trendingTokensSlice.reducer,
+  newTokens: newTokensSlice.reducer,
+  filters: filtersSlice.reducer,
+};
+
+export type RootState = {
+  trendingTokens: ReturnType<typeof trendingTokensSlice.reducer>;
+  newTokens: ReturnType<typeof newTokensSlice.reducer>;
+  filters: ReturnType<typeof filtersSlice.reducer>;
+};
+
 export const store = configureStore({
-  reducer: {
-    trendingTokens: trendingTokensSlice.reducer,
-    newTokens: newTokensSlice.reducer,
-    filters: filtersSlice.reducer,
-  },
+  reducer: rootReducer,
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {
@@ -25,5 +33,4 @@ export const store = configureStore({
     }).concat(webSocketMiddleware),
 });
 
-export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;

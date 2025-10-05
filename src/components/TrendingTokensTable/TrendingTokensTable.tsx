@@ -15,6 +15,7 @@ import { apiService } from '../../services/apiService';
 import { createWebSocketService } from '../../services/webSocketService';
 import { transformScannerResult } from '../../utils/dataTransform';
 import { sortTokens } from '../../utils/sortingUtils';
+import { useSubscriptionManager } from '../../hooks/useSubscriptionManager';
 
 const TableContainer = styled.div`
   flex: 1;
@@ -45,11 +46,26 @@ export const TrendingTokensTable: React.FC<TrendingTokensTableProps> = ({
     (state: AppState) => state.trendingTokens
   );
 
+  // Track visible range for subscription management
+  const [visibleRange, setVisibleRange] = React.useState<{ startIndex: number; endIndex: number } | null>(null);
+
   // Convert tokens object to sorted array
   const sortedTokens = useMemo(() => {
     const tokenArray = Object.values(tokens);
     return sortTokens(tokenArray, sortConfig);
   }, [tokens, sortConfig]);
+
+  // Initialize subscription manager for visible tokens
+  const {
+    subscriptionStats,
+    getSubscriptionStatus,
+    retryFailedSubscriptions
+  } = useSubscriptionManager({
+    webSocketService,
+    tokens: sortedTokens,
+    visibleRange: visibleRange || undefined,
+    enabled: webSocketService.getConnectionStatus() === 'connected'
+  });
 
   // Fetch initial data and subsequent pages
   const fetchTokens = useCallback(async (pageNum: number = 0, isLoadMore: boolean = false) => {
@@ -94,7 +110,7 @@ export const TrendingTokensTable: React.FC<TrendingTokensTableProps> = ({
     }
   }, [dispatch, filters]);
 
-  // Handle WebSocket subscriptions for trending tokens
+  // Handle WebSocket subscriptions for trending tokens (scanner-filter and pair-stats)
   useEffect(() => {
     const subscribeToTrendingTokens = () => {
       // Subscribe to scanner-filter for trending tokens
@@ -113,23 +129,12 @@ export const TrendingTokensTable: React.FC<TrendingTokensTableProps> = ({
         }
       });
 
-      // Subscribe to pair-stats for audit updates
+      // Subscribe to pair-stats for audit updates (for all tokens, not just visible ones)
       Object.keys(tokens).forEach(tokenId => {
         webSocketService.subscribe({
           type: 'subscribe',
           payload: {
             room: 'pair-stats',
-            params: { pairAddress: tokenId }
-          }
-        });
-      });
-
-      // Subscribe to individual pair rooms for price updates
-      Object.keys(tokens).forEach(tokenId => {
-        webSocketService.subscribe({
-          type: 'subscribe',
-          payload: {
-            room: 'pair',
             params: { pairAddress: tokenId }
           }
         });
@@ -152,6 +157,11 @@ export const TrendingTokensTable: React.FC<TrendingTokensTableProps> = ({
       webSocketService.removeMessageCallback(handleWebSocketMessage);
     };
   }, [webSocketService, tokens, filters]);
+
+  // Handle visible range changes for subscription management
+  const handleVisibleRangeChange = useCallback((range: { startIndex: number; endIndex: number }) => {
+    setVisibleRange(range);
+  }, []);
 
   // Load initial data when component mounts or filters change
   useEffect(() => {
@@ -185,6 +195,7 @@ export const TrendingTokensTable: React.FC<TrendingTokensTableProps> = ({
         onLoadMore={handleLoadMore}
         loading={loading}
         error={error}
+        onVisibleRangeChange={handleVisibleRangeChange}
       />
     </TableContainer>
   );

@@ -134,7 +134,11 @@ const CryptoScannerAppContent: React.FC = () => {
       <Header>
         <Title>
           📊 Crypto Scanner Tables
-          <StatusIndicator />
+          <StatusIndicator 
+            connectionStatus={webSocketServiceRef.current?.getConnectionStatus() || 'disconnected'}
+            loading={false}
+            error={null}
+          />
         </Title>
       </Header>
       
