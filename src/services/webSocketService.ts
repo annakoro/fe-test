@@ -7,6 +7,7 @@ import {
   PairStatsMsgData,
   ScannerPairsEventPayload
 } from '../types';
+import { handleWebSocketError, WebSocketError, errorHandler } from '../utils/errorUtils';
 
 export class WebSocketServiceImpl implements WebSocketService {
   private ws: WebSocket | null = null;
@@ -134,12 +135,28 @@ export class WebSocketServiceImpl implements WebSocketService {
                 try {
                   callback(message);
                 } catch (callbackError) {
-                  console.error('Error in message callback:', callbackError);
+                  const wsError = new WebSocketError(
+                    'Error in message callback',
+                    { 
+                      originalError: callbackError,
+                      messageType: message.type,
+                      callbackCount: this.messageCallbacks.length
+                    }
+                  );
+                  errorHandler.reportWebSocketError(wsError, this.connectionStatus);
                 }
               });
             }
           } catch (error) {
-            console.error('Error parsing WebSocket message:', error);
+            const wsError = new WebSocketError(
+              'Error parsing WebSocket message',
+              { 
+                originalError: error,
+                messageData: event.data,
+                messageSize: event.data.length
+              }
+            );
+            errorHandler.reportWebSocketError(wsError, this.connectionStatus);
           }
         };
 
@@ -148,8 +165,18 @@ export class WebSocketServiceImpl implements WebSocketService {
           this.connectionStatus = 'disconnected';
           this.ws = null;
           
-          // Attempt reconnection if not manually closed
+          // Report close event if it's unexpected
           if (event.code !== 1000) {
+            const wsError = new WebSocketError(
+              `WebSocket closed unexpectedly: ${event.code} - ${event.reason}`,
+              { 
+                code: event.code, 
+                reason: event.reason,
+                wasClean: event.wasClean,
+                reconnectAttempts: this.reconnectAttempts
+              }
+            );
+            errorHandler.reportWebSocketError(wsError, this.connectionStatus);
             this.scheduleReconnect();
           }
         };
@@ -157,7 +184,9 @@ export class WebSocketServiceImpl implements WebSocketService {
         this.ws.onerror = (error) => {
           console.error('WebSocket error:', error);
           this.connectionStatus = 'error';
-          reject(new Error('WebSocket connection failed'));
+          
+          const wsError = handleWebSocketError(error, this.connectionStatus);
+          reject(wsError);
         };
 
       } catch (error) {
@@ -252,7 +281,15 @@ export class WebSocketServiceImpl implements WebSocketService {
         this.ws.send(JSON.stringify(message));
         this.messageTimes.push(Date.now());
       } catch (error) {
-        console.error('Error sending WebSocket message:', error);
+        const wsError = new WebSocketError(
+          'Error sending WebSocket message',
+          { 
+            originalError: error,
+            messageType: message.type,
+            messagePayload: message.payload
+          }
+        );
+        errorHandler.reportWebSocketError(wsError, this.connectionStatus);
       }
     }
   }
@@ -413,7 +450,16 @@ export class WebSocketServiceImpl implements WebSocketService {
       try {
         await this.connect();
       } catch (error) {
-        console.error('Reconnection failed:', error);
+        const wsError = new WebSocketError(
+          `Reconnection attempt ${this.reconnectAttempts} failed`,
+          { 
+            originalError: error,
+            attempt: this.reconnectAttempts,
+            maxAttempts: this.maxReconnectAttempts,
+            delay
+          }
+        );
+        errorHandler.reportWebSocketError(wsError, this.connectionStatus);
         this.scheduleReconnect();
       }
     }, delay);

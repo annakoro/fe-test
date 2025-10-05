@@ -1,7 +1,9 @@
 import React from 'react';
 import styled from 'styled-components';
 
-const ErrorContainer = styled.div<{ variant?: 'default' | 'inline' | 'banner' }>`
+const ErrorContainer = styled.div.withConfig({
+  shouldForwardProp: (prop) => !['variant'].includes(prop),
+})<{ variant?: 'default' | 'inline' | 'banner' }>`
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -29,7 +31,9 @@ const ErrorContainer = styled.div<{ variant?: 'default' | 'inline' | 'banner' }>
   `}
 `;
 
-const ErrorIcon = styled.div<{ size?: 'small' | 'medium' | 'large' }>`
+const ErrorIcon = styled.div.withConfig({
+  shouldForwardProp: (prop) => !['size'].includes(prop),
+})<{ size?: 'small' | 'medium' | 'large' }>`
   width: ${props => {
     switch (props.size) {
       case 'small': return '20px';
@@ -60,7 +64,9 @@ const ErrorIcon = styled.div<{ size?: 'small' | 'medium' | 'large' }>`
   }};
 `;
 
-const ErrorContent = styled.div<{ variant?: 'default' | 'inline' | 'banner' }>`
+const ErrorContent = styled.div.withConfig({
+  shouldForwardProp: (prop) => !['variant'].includes(prop),
+})<{ variant?: 'default' | 'inline' | 'banner' }>`
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -68,7 +74,9 @@ const ErrorContent = styled.div<{ variant?: 'default' | 'inline' | 'banner' }>`
   flex: 1;
 `;
 
-const ErrorTitle = styled.div<{ size?: 'small' | 'medium' | 'large' }>`
+const ErrorTitle = styled.div.withConfig({
+  shouldForwardProp: (prop) => !['size'].includes(prop),
+})<{ size?: 'small' | 'medium' | 'large' }>`
   color: #d32f2f;
   font-weight: 600;
   font-size: ${props => {
@@ -80,7 +88,9 @@ const ErrorTitle = styled.div<{ size?: 'small' | 'medium' | 'large' }>`
   }};
 `;
 
-const ErrorMessage = styled.div<{ size?: 'small' | 'medium' | 'large' }>`
+const ErrorMessage = styled.div.withConfig({
+  shouldForwardProp: (prop) => !['size'].includes(prop),
+})<{ size?: 'small' | 'medium' | 'large' }>`
   color: #666;
   font-size: ${props => {
     switch (props.size) {
@@ -98,7 +108,9 @@ const ErrorActions = styled.div`
   margin-top: 8px;
 `;
 
-const RetryButton = styled.button<{ variant?: 'primary' | 'secondary' }>`
+const RetryButton = styled.button.withConfig({
+  shouldForwardProp: (prop) => !['variant'].includes(prop),
+})<{ variant?: 'primary' | 'secondary' }>`
   background-color: ${props => props.variant === 'secondary' ? 'transparent' : '#f44336'};
   color: ${props => props.variant === 'secondary' ? '#f44336' : 'white'};
   border: ${props => props.variant === 'secondary' ? '1px solid #f44336' : 'none'};

@@ -10,3 +10,6 @@ export * from './ErrorState';
 export * from './EmptyState';
 export * from './PriceChangeIndicator';
 export * from './CryptoScannerApp';
+export * from './ErrorBoundary';
+export * from './ErrorNotification';
+export * from './NotificationManager';

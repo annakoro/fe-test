@@ -5,3 +5,5 @@ export * from './dataTransform';
 export * from './filterValidation';
 export * from './sortingUtils';
 export * from './performanceUtils';
+export * from './errorHandler';
+export * from './errorUtils';
