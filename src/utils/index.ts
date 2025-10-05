@@ -2,3 +2,4 @@
 
 export * from './chainUtils';
 export * from './dataTransform';
+export * from './filterValidation';

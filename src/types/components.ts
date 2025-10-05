@@ -1,6 +1,6 @@
 // Component Props Types
 
-import { TokenData, SortConfig } from './token';
+import { TokenData, SortConfig, FilterState } from './token';
 
 export interface VirtualizedTableProps {
   tokens: TokenData[];
@@ -30,8 +30,8 @@ export interface TableColumn {
 }
 
 export interface FilterPanelProps {
-  onFilterChange: (filters: any) => void;
-  currentFilters: any;
+  onFilterChange: (filters: FilterState) => void;
+  currentFilters: FilterState;
 }
 
 export interface StatusIndicatorProps {

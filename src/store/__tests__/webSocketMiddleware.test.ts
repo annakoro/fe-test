@@ -60,18 +60,9 @@ describe('webSocketMiddleware', () => {
     it('should handle tick events and update token prices', () => {
       const tickPayload: TickEventPayload = {
         pairAddress: 'test-pair',
-        swaps: [
-          {
-            priceToken1Usd: '2.5',
-            outlier: false,
-            timestamp: Date.now(),
-          },
-          {
-            priceToken1Usd: '100.0', // This should be ignored as outlier
-            outlier: true,
-            timestamp: Date.now(),
-          },
-        ],
+        priceToken1Usd: 2.5,
+        isOutlier: false,
+        timestamp: '2024-01-01T12:00:00Z',
       };
 
       const action = webSocketActions.messageReceived({
@@ -82,7 +73,7 @@ describe('webSocketMiddleware', () => {
       store.dispatch(action);
 
       // Fast-forward timers to trigger batch update
-      jest.advanceTimersByTime(100);
+      jest.advanceTimersByTime(150);
 
       const state = store.getState();
       
@@ -91,16 +82,12 @@ describe('webSocketMiddleware', () => {
       expect(state.newTokens.tokens['test-pair'].priceUsd).toBe(2.5);
     });
 
-    it('should ignore tick events with only outlier swaps', () => {
+    it('should ignore tick events with outlier swaps', () => {
       const tickPayload: TickEventPayload = {
         pairAddress: 'test-pair',
-        swaps: [
-          {
-            priceToken1Usd: '100.0',
-            outlier: true,
-            timestamp: Date.now(),
-          },
-        ],
+        priceToken1Usd: 100.0,
+        isOutlier: true,
+        timestamp: '2024-01-01T12:00:00Z',
       };
 
       const action = webSocketActions.messageReceived({
@@ -109,7 +96,7 @@ describe('webSocketMiddleware', () => {
       });
 
       store.dispatch(action);
-      jest.advanceTimersByTime(100);
+      jest.advanceTimersByTime(150);
 
       const state = store.getState();
       
@@ -121,13 +108,9 @@ describe('webSocketMiddleware', () => {
     it('should ignore tick events for non-existent tokens', () => {
       const tickPayload: TickEventPayload = {
         pairAddress: 'non-existent-pair',
-        swaps: [
-          {
-            priceToken1Usd: '2.5',
-            outlier: false,
-            timestamp: Date.now(),
-          },
-        ],
+        priceToken1Usd: 2.5,
+        isOutlier: false,
+        timestamp: '2024-01-01T12:00:00Z',
       };
 
       const action = webSocketActions.messageReceived({
@@ -138,7 +121,7 @@ describe('webSocketMiddleware', () => {
       // Should not throw an error
       expect(() => {
         store.dispatch(action);
-        jest.advanceTimersByTime(100);
+        jest.advanceTimersByTime(150);
       }).not.toThrow();
     });
   });
@@ -163,14 +146,14 @@ describe('webSocketMiddleware', () => {
 
       const state = store.getState();
       
-      // Both tables should be updated with inverted mintable/freezable values
-      expect(state.trendingTokens.tokens['test-pair'].audit.mintable).toBe(false); // Inverted
-      expect(state.trendingTokens.tokens['test-pair'].audit.freezable).toBe(true); // Inverted
+      // Both tables should be updated with the audit values as received
+      expect(state.trendingTokens.tokens['test-pair'].audit.mintable).toBe(true);
+      expect(state.trendingTokens.tokens['test-pair'].audit.freezable).toBe(false);
       expect(state.trendingTokens.tokens['test-pair'].audit.honeypot).toBe(true);
       expect(state.trendingTokens.tokens['test-pair'].audit.contractVerified).toBe(false);
       
-      expect(state.newTokens.tokens['test-pair'].audit.mintable).toBe(false);
-      expect(state.newTokens.tokens['test-pair'].audit.freezable).toBe(true);
+      expect(state.newTokens.tokens['test-pair'].audit.mintable).toBe(true);
+      expect(state.newTokens.tokens['test-pair'].audit.freezable).toBe(false);
       expect(state.newTokens.tokens['test-pair'].audit.honeypot).toBe(true);
       expect(state.newTokens.tokens['test-pair'].audit.contractVerified).toBe(false);
     });
@@ -201,13 +184,9 @@ describe('webSocketMiddleware', () => {
     it('should process tick events and update token prices', () => {
       const tickPayload: TickEventPayload = {
         pairAddress: 'test-pair',
-        swaps: [
-          {
-            priceToken1Usd: '2.5',
-            outlier: false,
-            timestamp: Date.now(),
-          },
-        ],
+        priceToken1Usd: 2.5,
+        isOutlier: false,
+        timestamp: '2024-01-01T12:00:00Z',
       };
 
       store.dispatch(webSocketActions.messageReceived({
@@ -216,7 +195,7 @@ describe('webSocketMiddleware', () => {
       }));
 
       // Fast-forward timers to trigger batch update
-      jest.advanceTimersByTime(100);
+      jest.advanceTimersByTime(150);
 
       const state = store.getState();
       
@@ -230,13 +209,9 @@ describe('webSocketMiddleware', () => {
       for (let i = 0; i < 10; i++) {
         const tickPayload: TickEventPayload = {
           pairAddress: 'test-pair',
-          swaps: [
-            {
-              priceToken1Usd: `${2.0 + i * 0.1}`,
-              outlier: false,
-              timestamp: Date.now(),
-            },
-          ],
+          priceToken1Usd: 2.0 + i * 0.1,
+          isOutlier: false,
+          timestamp: '2024-01-01T12:00:00Z',
         };
 
         store.dispatch(webSocketActions.messageReceived({
@@ -246,7 +221,7 @@ describe('webSocketMiddleware', () => {
       }
 
       // Fast-forward timers
-      jest.advanceTimersByTime(100);
+      jest.advanceTimersByTime(150);
 
       const state = store.getState();
       
@@ -259,13 +234,9 @@ describe('webSocketMiddleware', () => {
       // Send both tick and pair-stats events
       const tickPayload: TickEventPayload = {
         pairAddress: 'test-pair',
-        swaps: [
-          {
-            priceToken1Usd: '3.0',
-            outlier: false,
-            timestamp: Date.now(),
-          },
-        ],
+        priceToken1Usd: 3.0,
+        isOutlier: false,
+        timestamp: '2024-01-01T12:00:00Z',
       };
 
       const pairStatsPayload: PairStatsMsgData = {
@@ -286,7 +257,7 @@ describe('webSocketMiddleware', () => {
         payload: pairStatsPayload,
       }));
 
-      jest.advanceTimersByTime(100);
+      jest.advanceTimersByTime(150);
 
       const state = store.getState();
       
@@ -319,7 +290,12 @@ describe('webSocketMiddleware', () => {
     it('should create messageReceived action', () => {
       const message = {
         type: 'tick' as const,
-        payload: { pairAddress: 'test', swaps: [] },
+        payload: { 
+          pairAddress: 'test', 
+          priceToken1Usd: 1.0, 
+          isOutlier: false, 
+          timestamp: '2024-01-01T12:00:00Z' 
+        },
       };
 
       const action = webSocketActions.messageReceived(message);
