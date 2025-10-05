@@ -26,18 +26,26 @@ export class WebSocketServiceImpl implements WebSocketService {
   private messageTimes: number[] = [];
 
   constructor() {
-    const wsUrl = process.env.REACT_APP_WEBSOCKET_URL;
+    const wsUrl = process.env.REACT_APP_WEBSOCKET_URL || 'wss://api-rs.dexcelerate.com/ws';
+    // const demoMode = process.env.REACT_APP_DEMO_MODE === 'true';
     
     if (!wsUrl) {
       throw new Error('REACT_APP_WEBSOCKET_URL environment variable is required');
     }
     
+    // // In demo mode, use a dummy URL
+    // if (demoMode) {
+    //   this.wsUrl = 'ws://localhost:8080/ws';
+    //   console.log('WebSocket service running in demo mode - connections will be simulated');
+    //   return;
+    // }
+    
     // More thorough URL validation
-    if (!this.isValidWebSocketUrl(wsUrl)) {
+    if (!this.isValidWebSocketUrl(wsUrl!)) {
       throw new Error('Invalid WebSocket URL format');
     }
     
-    this.wsUrl = wsUrl;
+    this.wsUrl = wsUrl!;
   }
 
   private isValidWebSocketUrl(url: string): boolean {
@@ -81,6 +89,18 @@ export class WebSocketServiceImpl implements WebSocketService {
     if (this.connectionStatus === 'connected' || this.connectionStatus === 'connecting') {
       return;
     }
+
+    // const demoMode = process.env.REACT_APP_DEMO_MODE === 'true';
+    
+    // if (demoMode) {
+    //   // Simulate connection in demo mode
+    //   this.connectionStatus = 'connecting';
+    //   setTimeout(() => {
+    //     this.connectionStatus = 'connected';
+    //     console.log('WebSocket connected (demo mode)');
+    //   }, 100);
+    //   return Promise.resolve();
+    // }
 
     this.connectionStatus = 'connecting';
     

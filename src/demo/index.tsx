@@ -3,9 +3,10 @@ import ReactDOM from 'react-dom/client';
 import { FilterPanelDemo } from './FilterPanelDemo';
 import { VirtualizedTableDemo } from './VirtualizedTableDemo';
 import { SortingDemo } from './SortingDemo';
+import { TableComponentsDemo } from './TableComponentsDemo';
 
 const DemoApp: React.FC = () => {
-  const [activeDemo, setActiveDemo] = useState<'filter' | 'table' | 'sorting'>('sorting');
+  const [activeDemo, setActiveDemo] = useState<'filter' | 'table' | 'sorting' | 'task10'>('task10');
 
   return (
     <div>
@@ -41,6 +42,7 @@ const DemoApp: React.FC = () => {
         <button 
           onClick={() => setActiveDemo('sorting')}
           style={{ 
+            marginRight: '10px',
             backgroundColor: activeDemo === 'sorting' ? '#007bff' : '#f8f9fa',
             color: activeDemo === 'sorting' ? 'white' : 'black',
             border: '1px solid #ccc',
@@ -51,11 +53,25 @@ const DemoApp: React.FC = () => {
         >
           Sorting Demo
         </button>
+        <button 
+          onClick={() => setActiveDemo('task10')}
+          style={{ 
+            backgroundColor: activeDemo === 'task10' ? '#007bff' : '#f8f9fa',
+            color: activeDemo === 'task10' ? 'white' : 'black',
+            border: '1px solid #ccc',
+            padding: '8px 16px',
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}
+        >
+          Task 10: Table Components
+        </button>
       </nav>
       
       {activeDemo === 'filter' && <FilterPanelDemo />}
       {activeDemo === 'table' && <VirtualizedTableDemo />}
       {activeDemo === 'sorting' && <SortingDemo />}
+      {activeDemo === 'task10' && <TableComponentsDemo />}
     </div>
   );
 };
