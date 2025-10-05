@@ -154,26 +154,7 @@
   top: var(--space-2);
 }
 
-/* Dark Mode Support */
-@media (prefers-color-scheme: dark) {
-  .crypto-scanner-app {
-    background-color: var(--gray-900);
-  }
-  
-  .crypto-scanner-table-wrapper,
-  .crypto-scanner-filter-section {
-    background: var(--gray-800);
-    border-color: var(--gray-700);
-  }
-  
-  .crypto-scanner-title {
-    color: var(--gray-100);
-  }
-  
-  .crypto-scanner-table-title {
-    color: var(--gray-100);
-  }
-}
+/* Dark mode support removed - light mode only */
 
 /* High Contrast Mode */
 @media (prefers-contrast: high) {
