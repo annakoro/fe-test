@@ -170,12 +170,12 @@ export function transformScannerResult(result: ScannerResult): TokenData | null 
         honeypot: result.honeyPot || false,
         contractVerified: result.contractVerified,
       },
-      tokenCreatedTimestamp: new Date(result.age),
+      tokenCreatedTimestamp: result.age,
       liquidity: {
         current: safeParseFloat(result.liquidity),
         changePc: safeParseFloat(result.percentChangeInLiquidity),
       },
-      lastUpdated: new Date(),
+      lastUpdated: new Date().toISOString(),
       subscriptionStatus: 'pending',
     };
 
@@ -213,12 +213,21 @@ export function validateAndTransformApiResponse(data: any): ScannerApiResponse {
     throw new Error('Invalid response format');
   }
 
-  if (!Array.isArray(data.results)) {
+  // Check for data in different possible fields
+  let resultsArray: any[];
+  if (Array.isArray(data.data)) {
+    resultsArray = data.data;
+  } else if (Array.isArray(data.results)) {
+    resultsArray = data.results;
+  } else if (Array.isArray(data)) {
+    resultsArray = data;
+  } else {
+    console.error('API Response structure:', data);
     throw new Error('Missing or invalid results array');
   }
 
   // Filter out invalid results and warn about them
-  const validResults = data.results.filter((result: any) => {
+  const validResults = resultsArray.filter((result: any) => {
     const isValid = isValidScannerResult(result);
     if (!isValid) {
       console.warn('Invalid scanner result detected, skipping:', result);

@@ -26,9 +26,13 @@ export const store = configureStore({
         // Ignore these action types
         ignoredActions: ['websocket/messageReceived', 'websocket/connectionStatusChanged'],
         // Ignore these field paths in all actions
-        ignoredActionsPaths: ['payload.timestamp'],
+        ignoredActionsPaths: ['payload.timestamp', 'payload.tokenCreatedTimestamp', 'payload.lastUpdated'],
         // Ignore these paths in the state
-        ignoredPaths: ['websocket.lastMessage'],
+        ignoredPaths: [
+          'websocket.lastMessage',
+          'trendingTokens.tokens',
+          'newTokens.tokens'
+        ],
       },
     }).concat(webSocketMiddleware),
 });

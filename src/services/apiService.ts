@@ -70,6 +70,19 @@ export class DexcelerateApiService implements ApiService {
 
             const data = await response.json();
             
+            // Debug logging for development
+            if (process.env.NODE_ENV === 'development') {
+              console.log('API Response structure:', {
+                hasData: !!data.data,
+                hasResults: !!data.results,
+                dataType: Array.isArray(data.data) ? 'array' : typeof data.data,
+                resultsType: Array.isArray(data.results) ? 'array' : typeof data.results,
+                dataLength: Array.isArray(data.data) ? data.data.length : 'N/A',
+                resultsLength: Array.isArray(data.results) ? data.results.length : 'N/A',
+                keys: Object.keys(data)
+              });
+            }
+            
             try {
               return validateAndTransformApiResponse(data);
             } catch (validationError) {

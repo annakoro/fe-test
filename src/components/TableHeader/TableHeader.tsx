@@ -101,9 +101,8 @@ export const TableHeader: React.FC<TableHeaderProps> = ({
   };
 
   return (
-    <div className="crypto-table-header" role="rowgroup">
-      <div role="row">
-        {columns.map((column) => {
+    <div className="crypto-table-header" role="row">
+      {columns.map((column) => {
           const isActive = sortConfig.column === column.key;
           const sortDirection = getSortDirection(column.key);
           const alignment = getAlignment(column.key);
@@ -144,7 +143,6 @@ export const TableHeader: React.FC<TableHeaderProps> = ({
             </div>
           );
         })}
-      </div>
     </div>
   );
 };

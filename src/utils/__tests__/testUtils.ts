@@ -27,12 +27,12 @@ export const mockTokenData: TokenData = {
     honeypot: false,
     contractVerified: true,
   },
-  tokenCreatedTimestamp: new Date('2024-01-01T00:00:00Z'),
+  tokenCreatedTimestamp: '2024-01-01T00:00:00Z',
   liquidity: {
     current: 50000,
     changePc: 10.0,
   },
-  lastUpdated: new Date(),
+  lastUpdated: new Date().toISOString(),
   subscriptionStatus: 'subscribed',
 };
 

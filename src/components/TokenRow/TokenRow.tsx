@@ -17,9 +17,10 @@ const formatPrice = (price: number): string => {
   return `$${price.toFixed(price < 1 ? 4 : 2)}`;
 };
 
-const formatAge = (timestamp: Date): string => {
+const formatAge = (timestamp: string): string => {
   const now = new Date();
-  const diffMs = now.getTime() - timestamp.getTime();
+  const tokenDate = new Date(timestamp);
+  const diffMs = now.getTime() - tokenDate.getTime();
   const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
   const diffDays = Math.floor(diffHours / 24);
   

@@ -53,8 +53,9 @@
 
 .filter-panel__content {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: var(--space-4);
+  align-items: start;
 }
 
 /* Filter Group Styles */
@@ -63,13 +64,21 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
+  min-height: fit-content;
+  position: relative;
+  padding: var(--space-1);
+  border-radius: var(--radius-sm);
+  background: var(--bg-primary);
 }
 
 .filter-label {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-xs);
   font-weight: var(--font-weight-medium);
   color: var(--text-secondary);
   margin-bottom: var(--space-1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .filter-select,
@@ -126,63 +135,91 @@
 
 .filter-market-cap-container {
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
+  align-items: stretch;
+  width: 100%;
 }
 
 .filter-market-cap-preset {
   flex: 1;
+  min-width: 0;
 }
 
 .filter-market-cap-input {
   flex: 1;
+  min-width: 0;
 }
 
 .filter-value-display {
-  font-size: 12px;
-  color: #718096;
-  margin-top: 4px;
+  font-size: var(--font-size-xs);
+  color: var(--text-disabled);
+  margin-top: var(--space-1);
+  padding: 0;
 }
 
 /* Security Filter Specific Styles */
 
+.security-filter-group {
+  border: 1px solid var(--border-medium);
+  background: var(--bg-secondary);
+  margin-top: var(--space-1);
+}
+
 .filter-checkbox-group {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-1);
+  margin-top: var(--space-1);
+  padding: var(--space-2);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  background: var(--bg-primary);
+  position: relative;
+  z-index: 1;
 }
 
 .filter-checkbox-label {
   display: flex;
   align-items: flex-start;
-  gap: 8px;
+  gap: var(--space-2);
   cursor: pointer;
-  font-size: 14px;
+  font-size: var(--font-size-sm);
+  line-height: 1.4;
+  margin: 0;
+  padding: 0;
 }
 
 .filter-checkbox {
   margin: 0;
   width: 16px;
   height: 16px;
-  accent-color: #3182ce;
+  accent-color: var(--primary-500);
+  flex-shrink: 0;
+  margin-top: 2px; /* Align with text baseline */
 }
 
 .filter-checkbox-text {
-  color: #2d3748;
+  color: var(--text-primary);
   line-height: 1.4;
+  flex: 1;
+  margin: 0;
+  padding: 0;
 }
 
 .filter-help-text {
-  font-size: 12px;
-  color: #718096;
+  font-size: var(--font-size-xs);
+  color: var(--text-disabled);
   margin-left: 24px;
   line-height: 1.3;
+  margin-top: var(--space-1);
+  padding: 0;
 }
 
 /* Responsive Design */
 
 @media (max-width: 1024px) {
   .filter-panel__content {
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
     gap: var(--space-3);
   }
 }
@@ -200,7 +237,12 @@
   
   .filter-panel__content {
     grid-template-columns: 1fr;
-    gap: var(--space-3);
+    gap: var(--space-4);
+  }
+  
+  .filter-group {
+    padding: var(--space-3);
+    margin-bottom: var(--space-2);
   }
   
   .filter-age-container,

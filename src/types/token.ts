@@ -29,13 +29,13 @@ export interface TokenData {
     honeypot: boolean;
     contractVerified: boolean;
   };
-  tokenCreatedTimestamp: Date;
+  tokenCreatedTimestamp: string;
   liquidity: {
     current: number;
     changePc: number;
   };
   // Internal tracking fields
-  lastUpdated: Date;
+  lastUpdated: string;
   subscriptionStatus: 'pending' | 'subscribed' | 'error';
 }
 

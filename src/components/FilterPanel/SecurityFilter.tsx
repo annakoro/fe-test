@@ -14,7 +14,7 @@ export const SecurityFilter: React.FC<SecurityFilterProps> = ({
   };
 
   return (
-    <div className="filter-group">
+    <div className="filter-group security-filter-group">
       <label className="filter-label">Security Options</label>
       <div className="filter-checkbox-group">
         <label className="filter-checkbox-label">
@@ -23,6 +23,7 @@ export const SecurityFilter: React.FC<SecurityFilterProps> = ({
             className="filter-checkbox"
             checked={excludeHoneypots}
             onChange={handleChange}
+            id="exclude-honeypots-checkbox"
           />
           <span className="filter-checkbox-text">
             Exclude honeypots

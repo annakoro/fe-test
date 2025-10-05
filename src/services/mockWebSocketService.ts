@@ -13,7 +13,6 @@ import {
   TickEventPayload,
   PairStatsMsgData,
   ScannerPairsEventPayload,
-  WpegPricesPayload
 } from '../types';
 
 export class MockWebSocketService implements WebSocketService {
@@ -79,11 +78,6 @@ export class MockWebSocketService implements WebSocketService {
   }
 
   private startMockDataFlow(): void {
-    // Mock wpeg-prices every 30 seconds
-    const wpegInterval = setInterval(() => {
-      this.sendMockWpegPrices();
-    }, 30000);
-    this.intervals.push(wpegInterval);
 
     // Mock tick events every 2-5 seconds
     const tickInterval = setInterval(() => {
@@ -98,25 +92,8 @@ export class MockWebSocketService implements WebSocketService {
     this.intervals.push(statsInterval);
 
     // Send initial data immediately
-    setTimeout(() => this.sendMockWpegPrices(), 100);
     setTimeout(() => this.sendMockTickEvent(), 500);
     setTimeout(() => this.sendMockPairStats(), 1000);
-  }
-
-  private sendMockWpegPrices(): void {
-    const message: IncomingWebSocketMessage = {
-      type: 'wpeg-prices',
-      payload: {
-        prices: {
-          ETH: (4500 + Math.random() * 100).toFixed(2),
-          BASE: (4500 + Math.random() * 100).toFixed(2),
-          SOL: (220 + Math.random() * 20).toFixed(2),
-          BSC: (1150 + Math.random() * 50).toFixed(2),
-        }
-      } as WpegPricesPayload
-    };
-
-    this.broadcastMessage(message);
   }
 
   private sendMockTickEvent(): void {

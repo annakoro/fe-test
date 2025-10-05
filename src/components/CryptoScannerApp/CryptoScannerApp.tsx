@@ -63,8 +63,7 @@ const CryptoScannerAppContent: React.FC = memo(() => {
     
     if (!webSocketServiceRef.current) {
       // Use mock WebSocket service in development if real WebSocket fails
-      const useMockWebSocket = process.env.REACT_APP_USE_MOCK_WEBSOCKET === 'true' || 
-                               process.env.NODE_ENV === 'development';
+      const useMockWebSocket = process.env.REACT_APP_USE_MOCK_WEBSOCKET === 'true';
       
       webSocketServiceRef.current = useMockWebSocket 
         ? createMockWebSocketService()

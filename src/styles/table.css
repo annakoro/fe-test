@@ -1,7 +1,7 @@
 /* Responsive Table Styles */
 
 .crypto-table-container {
-  height: 600px;
+  height: 450px;
   width: 100%;
   border: 1px solid var(--border-light);
   border-radius: var(--radius-lg);
@@ -11,8 +11,75 @@
   flex-direction: column;
 }
 
+.crypto-table-scroll-wrapper {
+  overflow-x: auto;
+  overflow-y: hidden;
+  flex: 1;
+  min-width: 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary-300) var(--gray-100);
+}
+
+.crypto-table-scroll-wrapper::-webkit-scrollbar {
+  height: 8px;
+}
+
+.crypto-table-scroll-wrapper::-webkit-scrollbar-track {
+  background: var(--gray-100);
+  border-radius: 4px;
+}
+
+.crypto-table-scroll-wrapper::-webkit-scrollbar-thumb {
+  background: var(--primary-300);
+  border-radius: 4px;
+}
+
+.crypto-table-scroll-wrapper::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-500);
+}
+
+.crypto-table-content {
+  min-width: max-content;
+  width: 100%;
+  position: relative;
+}
+
+/* Scroll indicator shadows */
+.crypto-table-scroll-wrapper::before,
+.crypto-table-scroll-wrapper::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 20px;
+  pointer-events: none;
+  z-index: 2;
+  transition: opacity 0.3s ease;
+}
+
+.crypto-table-scroll-wrapper::before {
+  left: 0;
+  background: linear-gradient(to right, rgba(0,0,0,0.1), transparent);
+  opacity: 0;
+}
+
+.crypto-table-scroll-wrapper::after {
+  right: 0;
+  background: linear-gradient(to left, rgba(0,0,0,0.1), transparent);
+  opacity: 1;
+}
+
+.crypto-table-scroll-wrapper.scrolled-left::before {
+  opacity: 1;
+}
+
+.crypto-table-scroll-wrapper.scrolled-right::after {
+  opacity: 0;
+}
+
 .crypto-table-header {
   display: flex;
+  flex-direction: row;
   align-items: center;
   padding: var(--space-2) var(--space-3);
   background-color: var(--bg-secondary);
@@ -26,6 +93,8 @@
   top: 0;
   z-index: var(--z-sticky);
   min-height: 48px;
+  min-width: 1200px;
+  width: max-content;
 }
 
 .crypto-table-header-cell {
@@ -38,6 +107,7 @@
   border-radius: var(--radius-sm);
   min-height: 32px;
   box-sizing: border-box;
+  flex-shrink: 0;
 }
 
 .crypto-table-header-cell:hover {
@@ -71,6 +141,7 @@
 
 .crypto-table-row {
   display: flex;
+  flex-direction: row;
   align-items: center;
   padding: var(--space-2) var(--space-3);
   border-bottom: 1px solid var(--border-light);
@@ -78,6 +149,8 @@
   font-size: var(--font-size-sm);
   transition: background-color 0.15s ease;
   min-height: 60px;
+  min-width: 1200px;
+  width: max-content;
 }
 
 .crypto-table-row:hover {
@@ -98,6 +171,7 @@
   display: flex;
   align-items: center;
   box-sizing: border-box;
+  flex-shrink: 0;
 }
 
 .crypto-table-cell.align-left {
@@ -232,15 +306,25 @@
 }
 
 /* Responsive Design */
-@media (max-width: 1200px) {
+@media (max-width: 1400px) {
   .crypto-table-container {
-    height: 500px;
+    height: 400px;
   }
   
-  /* Hide less important columns on smaller screens */
-  .crypto-table-cell.hide-lg,
-  .crypto-table-header-cell.hide-lg {
-    display: none;
+  .crypto-table-header,
+  .crypto-table-row {
+    min-width: 1000px;
+  }
+}
+
+@media (max-width: 1200px) {
+  .crypto-table-container {
+    height: 380px;
+  }
+  
+  .crypto-table-header,
+  .crypto-table-row {
+    min-width: 900px;
   }
 }
 
