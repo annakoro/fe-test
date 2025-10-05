@@ -1,13 +1,14 @@
 import { Dispatch } from '@reduxjs/toolkit';
 import { FilterState } from '../types/token';
 import { filtersToApiParams } from '../utils/filterValidation';
-import { webSocketService } from './webSocketService';
+import { createWebSocketService } from './webSocketService';
 import { OutgoingWebSocketMessage } from '../types/websocket';
 
 /**
  * Service for integrating filter changes with API requests and WebSocket subscriptions
  */
 class FilterIntegrationService {
+  private webSocketService = createWebSocketService();
   private dispatch: Dispatch | null = null;
   private currentFilters: FilterState | null = null;
   private activeSubscriptions: Set<string> = new Set();
@@ -68,7 +69,7 @@ class FilterIntegrationService {
       },
     };
 
-    webSocketService.subscribe(scannerFilterMessage);
+    this.webSocketService.subscribe(scannerFilterMessage);
     this.activeSubscriptions.add(`scanner-filter:${JSON.stringify(apiParams)}`);
   }
 
@@ -88,7 +89,7 @@ class FilterIntegrationService {
         },
       };
 
-      webSocketService.unsubscribe(unsubscribeMessage);
+      this.webSocketService.unsubscribe(unsubscribeMessage);
       this.activeSubscriptions.delete(subscriptionKey);
     }
   }
@@ -109,7 +110,7 @@ class FilterIntegrationService {
           },
         };
 
-        webSocketService.subscribe(pairMessage);
+        this.webSocketService.subscribe(pairMessage);
         this.activeSubscriptions.add(subscriptionKey);
       }
     });
@@ -131,7 +132,7 @@ class FilterIntegrationService {
           },
         };
 
-        webSocketService.unsubscribe(unsubscribeMessage);
+        this.webSocketService.unsubscribe(unsubscribeMessage);
         this.activeSubscriptions.delete(subscriptionKey);
       }
     });
@@ -161,7 +162,7 @@ class FilterIntegrationService {
                 params,
               },
             };
-            webSocketService.unsubscribe(unsubscribeMessage);
+            this.webSocketService.unsubscribe(unsubscribeMessage);
           }
         } else if (subscriptionKey.startsWith('pair:')) {
           const pairAddress = subscriptionKey.substring('pair:'.length);
@@ -173,7 +174,7 @@ class FilterIntegrationService {
                 params: { pairAddress },
               },
             };
-            webSocketService.unsubscribe(unsubscribeMessage);
+            this.webSocketService.unsubscribe(unsubscribeMessage);
           }
         }
       } catch (error) {

@@ -1,0 +1,1 @@
+export { TableHeader, TABLE_COLUMNS, default } from './TableHeader';
