@@ -14,7 +14,9 @@ export interface WebSocketService {
   subscribe(message: OutgoingWebSocketMessage): void;
   unsubscribe(message: OutgoingWebSocketMessage): void;
   onMessage(callback: (message: IncomingWebSocketMessage) => void): void;
+  removeMessageCallback(callback: (message: IncomingWebSocketMessage) => void): void;
   getConnectionStatus(): WebSocketConnectionStatus;
+  cleanup(): void;
 }
 
 export interface UpdateHandlers {
