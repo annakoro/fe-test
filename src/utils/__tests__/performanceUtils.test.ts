@@ -5,7 +5,7 @@ import {
   throttle, 
   batchCalls, 
   memoize, 
-  PerformanceMonitor, 
+
   MemoryManager, 
   TokenDataCache 
 } from '../performanceUtils';
@@ -133,44 +133,7 @@ describe('Performance Utilities', () => {
     });
   });
 
-  describe('PerformanceMonitor', () => {
-    let monitor: PerformanceMonitor;
 
-    beforeEach(() => {
-      monitor = PerformanceMonitor.getInstance();
-      monitor.clearMetrics();
-    });
-
-    it('should record timing metrics', () => {
-      const endTiming = monitor.startTiming('test-operation');
-      
-      // Simulate some work
-      jest.advanceTimersByTime(50);
-      endTiming();
-
-      const average = monitor.getAverage('test-operation');
-      expect(average).toBeGreaterThan(0);
-    });
-
-    it('should calculate averages correctly', () => {
-      monitor.recordMetric('test-metric', 10);
-      monitor.recordMetric('test-metric', 20);
-      monitor.recordMetric('test-metric', 30);
-
-      const average = monitor.getAverage('test-metric');
-      expect(average).toBe(20);
-    });
-
-    it('should limit sample size', () => {
-      // Record more than max samples
-      for (let i = 0; i < 150; i++) {
-        monitor.recordMetric('test-metric', i);
-      }
-
-      const allMetrics = monitor.getAllMetrics();
-      expect(allMetrics['test-metric']).toBeDefined();
-    });
-  });
 
   describe('MemoryManager', () => {
     let manager: MemoryManager;

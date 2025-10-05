@@ -4,7 +4,7 @@ import { TokenRow } from '../TokenRow/TokenRow';
 import { TableHeader, TABLE_COLUMNS } from '../TableHeader/TableHeader';
 import { ErrorState } from '../ErrorState';
 import { EmptyState } from '../EmptyState';
-import { PerformanceMonitor } from '../../utils/performanceUtils';
+
 import '../../styles/table.css';
 
 
@@ -21,15 +21,10 @@ export const VirtualizedTable: React.FC<VirtualizedTableProps> = memo(({
   error,
   onVisibleRangeChange
 }) => {
-  const performanceMonitor = PerformanceMonitor.getInstance();
-  
   // Memoize the token array to prevent unnecessary re-renders
   const tokenArray = useMemo(() => {
-    const endTiming = performanceMonitor.startTiming('tokenArray_memoization');
-    const result = tokens;
-    endTiming();
-    return result;
-  }, [tokens, performanceMonitor]);
+    return tokens;
+  }, [tokens]);
 
   // Handle retry on error
   const handleRetry = () => {

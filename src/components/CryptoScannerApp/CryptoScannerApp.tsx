@@ -32,7 +32,7 @@ import { useAppSelector } from '../../store/hooks';
 import { createWebSocketService } from '../../services/webSocketService';
 import { createMockWebSocketService } from '../../services/mockWebSocketService';
 import { webSocketActions } from '../../store/middleware/webSocketMiddleware';
-import { MemoryManager, PerformanceMonitor } from '../../utils/performanceUtils';
+import { MemoryManager } from '../../utils/performanceUtils';
 import './CryptoScannerApp.css';
 
 
@@ -55,12 +55,9 @@ const CryptoScannerAppContent: React.FC = memo(() => {
   const webSocketServiceRef = useRef<ReturnType<typeof createWebSocketService> | null>(null);
   const [isWebSocketReady, setIsWebSocketReady] = React.useState(false);
   const memoryManager = MemoryManager.getInstance();
-  const performanceMonitor = PerformanceMonitor.getInstance();
 
   // Initialize WebSocket service and memory management
   useEffect(() => {
-    const endTiming = performanceMonitor.startTiming('app_initialization');
-    
     if (!webSocketServiceRef.current) {
       // Use mock WebSocket service in development if real WebSocket fails
       const useMockWebSocket = process.env.REACT_APP_USE_MOCK_WEBSOCKET === 'true';
@@ -101,14 +98,6 @@ const CryptoScannerAppContent: React.FC = memo(() => {
     
     // Register cleanup tasks for memory management
     const unregisterCleanupTasks = [
-      // Clear performance metrics periodically
-      memoryManager.registerCleanupTask(() => {
-        const metrics = performanceMonitor.getAllMetrics();
-        console.log('Performance metrics:', metrics);
-        // Keep only recent metrics
-        performanceMonitor.clearMetrics();
-      }),
-      
       // Clean up old token data from Redux store
       memoryManager.registerCleanupTask(() => {
         const maxAge = 30 * 60 * 1000; // 30 minutes
@@ -123,8 +112,6 @@ const CryptoScannerAppContent: React.FC = memo(() => {
       })
     ];
 
-    endTiming();
-
     // Cleanup on unmount
     return () => {
       if (webSocketServiceRef.current) {
@@ -137,7 +124,7 @@ const CryptoScannerAppContent: React.FC = memo(() => {
       memoryManager.stopAutoCleanup();
       unregisterCleanupTasks.forEach(unregister => unregister());
     };
-  }, [memoryManager, performanceMonitor]);
+  }, [memoryManager]);
 
   return (
     <div className="crypto-scanner-app">

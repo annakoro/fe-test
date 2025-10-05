@@ -16,7 +16,7 @@ import {
   ScannerPairsEventPayload
 } from '../types/websocket';
 import { TokenData } from '../types/token';
-import { debounce, PerformanceMonitor } from '../utils/performanceUtils';
+import { debounce } from '../utils/performanceUtils';
 
 // Batch update configuration
 const BATCH_UPDATE_DELAY = 100; // ms
@@ -57,7 +57,7 @@ class UpdateHandlersService {
 
   private batchTimeout: NodeJS.Timeout | null = null;
   private dispatch: Dispatch | null = null;
-  private performanceMonitor = PerformanceMonitor.getInstance();
+
   
   // Debounced flush function to prevent excessive updates
   private debouncedFlush = debounce(() => {
@@ -73,11 +73,8 @@ class UpdateHandlersService {
    * Requirements: 3.3, 8.1, 8.3 (debouncing for rapid successive price updates)
    */
   handleTickEvent(payload: TickEventPayload, state: RootState): void {
-    const endTiming = this.performanceMonitor.startTiming('handleTickEvent');
-    
     if (!this.dispatch) {
       console.error('Dispatch not set in UpdateHandlersService');
-      endTiming();
       return;
     }
 
@@ -85,7 +82,6 @@ class UpdateHandlersService {
     
     // Skip outlier swaps as per requirements
     if (isOutlier) {
-      endTiming();
       return;
     }
 
@@ -118,7 +114,6 @@ class UpdateHandlersService {
     
     // Use debounced flush instead of immediate scheduling
     this.debouncedFlush();
-    endTiming();
   }
 
   /**
@@ -126,11 +121,8 @@ class UpdateHandlersService {
    * Requirements: 3.4, 8.1, 8.3 (debouncing for rapid successive updates)
    */
   handlePairStatsEvent(payload: PairStatsMsgData, state: RootState): void {
-    const endTiming = this.performanceMonitor.startTiming('handlePairStatsEvent');
-    
     if (!this.dispatch) {
       console.error('Dispatch not set in UpdateHandlersService');
-      endTiming();
       return;
     }
 
@@ -165,7 +157,6 @@ class UpdateHandlersService {
     
     // Use debounced flush instead of immediate scheduling
     this.debouncedFlush();
-    endTiming();
   }
 
   /**
@@ -258,31 +249,7 @@ class UpdateHandlersService {
     }
   }
 
-  /**
-   * Schedule batch update with debouncing to prevent excessive re-renders
-   * Requirements: 8.3
-   */
-  private scheduleBatchUpdate(): void {
-    if (this.batchTimeout) {
-      clearTimeout(this.batchTimeout);
-    }
-    
-    // Check if we should flush immediately due to batch size
-    const totalUpdates = 
-      this.batchedUpdates.trendingPriceUpdates.length +
-      this.batchedUpdates.trendingAuditUpdates.length +
-      this.batchedUpdates.newTokensPriceUpdates.length +
-      this.batchedUpdates.newTokensAuditUpdates.length;
-    
-    if (totalUpdates >= MAX_BATCH_SIZE) {
-      this.flushBatchedUpdates();
-      return;
-    }
-    
-    this.batchTimeout = setTimeout(() => {
-      this.flushBatchedUpdates();
-    }, BATCH_UPDATE_DELAY);
-  }
+
 
   /**
    * Flush all batched updates to Redux store

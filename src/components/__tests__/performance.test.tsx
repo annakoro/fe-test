@@ -11,7 +11,7 @@ import { trendingTokensSlice } from '../../store/slices/trendingTokensSlice';
 import { newTokensSlice } from '../../store/slices/newTokensSlice';
 import { filtersSlice } from '../../store/slices/filtersSlice';
 import { TokenData } from '../../types/token';
-import { PerformanceMonitor } from '../../utils/performanceUtils';
+
 
 // Mock react-window components
 jest.mock('react-window', () => {
@@ -155,11 +155,7 @@ const createTestStore = (tokenCount: number = 1000) => {
 };
 
 describe('Performance Tests', () => {
-  let performanceMonitor: PerformanceMonitor;
-
   beforeEach(() => {
-    performanceMonitor = PerformanceMonitor.getInstance();
-    performanceMonitor.clearMetrics();
     jest.clearAllMocks();
   });
 

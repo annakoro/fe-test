@@ -3,7 +3,7 @@ import { CryptoScannerApp } from './components/CryptoScannerApp';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { NotificationManager } from './components/NotificationManager';
 import { errorHandler } from './utils/errorHandler';
-import { PerformanceMonitor } from './utils/performanceUtils';
+
 
 /**
  * Main Application Component
@@ -19,9 +19,6 @@ import { PerformanceMonitor } from './utils/performanceUtils';
  */
 function App() {
   useEffect(() => {
-    const performanceMonitor = PerformanceMonitor.getInstance();
-    const endTiming = performanceMonitor.startTiming('app_startup');
-
     // Initialize global error handler
     errorHandler.initialize();
 
@@ -29,8 +26,6 @@ function App() {
     console.log('🚀 Crypto Scanner Tables Application Started');
     console.log('Environment:', process.env.NODE_ENV);
     console.log('Version:', process.env.REACT_APP_VERSION || '1.0.0');
-
-    endTiming();
 
     // Cleanup on unmount
     return () => {
