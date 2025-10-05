@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useCallback } from 'react';
+import React, { useEffect, useRef, useCallback, memo } from 'react';
 import { Provider } from 'react-redux';
 import styled from 'styled-components';
 import { store } from '../../store';
@@ -9,6 +9,7 @@ import { StatusIndicator } from '../StatusIndicator';
 import { useAppSelector } from '../../store/hooks';
 import { createWebSocketService } from '../../services/webSocketService';
 import { webSocketActions } from '../../store/middleware/webSocketMiddleware';
+import { MemoryManager, PerformanceMonitor } from '../../utils/performanceUtils';
 
 const AppContainer = styled.div`
   display: flex;
@@ -82,13 +83,17 @@ const TableWrapper = styled.div`
 `;
 
 // Internal component that uses Redux hooks
-const CryptoScannerAppContent: React.FC = () => {
+const CryptoScannerAppContent: React.FC = memo(() => {
   const filters = useAppSelector(state => state.filters);
   const webSocketServiceRef = useRef<ReturnType<typeof createWebSocketService> | null>(null);
   const [isWebSocketReady, setIsWebSocketReady] = React.useState(false);
+  const memoryManager = MemoryManager.getInstance();
+  const performanceMonitor = PerformanceMonitor.getInstance();
 
-  // Initialize WebSocket service
+  // Initialize WebSocket service and memory management
   useEffect(() => {
+    const endTiming = performanceMonitor.startTiming('app_initialization');
+    
     if (!webSocketServiceRef.current) {
       webSocketServiceRef.current = createWebSocketService();
       setIsWebSocketReady(true);
@@ -119,6 +124,35 @@ const CryptoScannerAppContent: React.FC = () => {
 
     connectWebSocket();
 
+    // Start memory management
+    memoryManager.startAutoCleanup();
+    
+    // Register cleanup tasks for memory management
+    const unregisterCleanupTasks = [
+      // Clear performance metrics periodically
+      memoryManager.registerCleanupTask(() => {
+        const metrics = performanceMonitor.getAllMetrics();
+        console.log('Performance metrics:', metrics);
+        // Keep only recent metrics
+        performanceMonitor.clearMetrics();
+      }),
+      
+      // Clean up old token data from Redux store
+      memoryManager.registerCleanupTask(() => {
+        const maxAge = 30 * 60 * 1000; // 30 minutes
+        
+        // Import cleanup actions
+        const { cleanupOldTokens: cleanupTrendingTokens } = require('../../store/slices/trendingTokensSlice');
+        const { cleanupOldTokens: cleanupNewTokens } = require('../../store/slices/newTokensSlice');
+        
+        // Dispatch cleanup actions
+        store.dispatch(cleanupTrendingTokens({ maxAge }));
+        store.dispatch(cleanupNewTokens({ maxAge }));
+      })
+    ];
+
+    endTiming();
+
     // Cleanup on unmount
     return () => {
       if (webSocketServiceRef.current) {
@@ -126,8 +160,12 @@ const CryptoScannerAppContent: React.FC = () => {
         webSocketServiceRef.current.cleanup();
         webSocketServiceRef.current = null;
       }
+      
+      // Stop memory management and unregister cleanup tasks
+      memoryManager.stopAutoCleanup();
+      unregisterCleanupTasks.forEach(unregister => unregister());
     };
-  }, []);
+  }, [memoryManager, performanceMonitor]);
 
   return (
     <AppContainer>
@@ -169,15 +207,21 @@ const CryptoScannerAppContent: React.FC = () => {
       </MainContent>
     </AppContainer>
   );
-};
+});
+
+// Set display name for debugging
+CryptoScannerAppContent.displayName = 'CryptoScannerAppContent';
 
 // Main component that provides Redux store
-export const CryptoScannerApp: React.FC = () => {
+export const CryptoScannerApp: React.FC = memo(() => {
   return (
     <Provider store={store}>
       <CryptoScannerAppContent />
     </Provider>
   );
-};
+});
+
+// Set display name for debugging
+CryptoScannerApp.displayName = 'CryptoScannerApp';
 
 export default CryptoScannerApp;

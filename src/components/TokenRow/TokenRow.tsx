@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { memo, useMemo } from 'react';
 import styled from 'styled-components';
 import { TokenRowProps } from '../../types/components';
 import { PriceChangeIndicator } from '../PriceChangeIndicator';
+import { memoize } from '../../utils/performanceUtils';
 
 const RowContainer = styled.div`
   display: flex;
@@ -95,13 +96,27 @@ const formatAge = (timestamp: Date): string => {
   return '<1h';
 };
 
-export const TokenRow: React.FC<TokenRowProps> = ({ token, style }) => {
-  const getAuditStatus = () => {
+// Memoized component for performance optimization
+export const TokenRow: React.FC<TokenRowProps> = memo(({ token, style }) => {
+  // Memoize expensive calculations
+  const auditStatus = useMemo(() => {
     if (token.audit.honeypot) return 'danger';
     if (!token.audit.contractVerified) return 'warning';
     if (token.audit.mintable || token.audit.freezable) return 'warning';
     return 'verified';
-  };
+  }, [token.audit.honeypot, token.audit.contractVerified, token.audit.mintable, token.audit.freezable]);
+
+  // Memoize formatted values to prevent recalculation on every render
+  const formattedPrice = useMemo(() => formatPrice(token.priceUsd), [token.priceUsd]);
+  const formattedMcap = useMemo(() => formatNumber(token.mcap), [token.mcap]);
+  const formattedVolume = useMemo(() => formatNumber(token.volumeUsd), [token.volumeUsd]);
+  const formattedAge = useMemo(() => formatAge(token.tokenCreatedTimestamp), [token.tokenCreatedTimestamp]);
+  const formattedLiquidity = useMemo(() => formatNumber(token.liquidity.current), [token.liquidity]);
+  
+  const auditTitle = useMemo(() => 
+    `Verified: ${token.audit.contractVerified}, Mintable: ${token.audit.mintable}, Freezable: ${token.audit.freezable}, Honeypot: ${token.audit.honeypot}`,
+    [token.audit.contractVerified, token.audit.mintable, token.audit.freezable, token.audit.honeypot]
+  );
 
   return (
     <RowContainer style={style}>
@@ -117,15 +132,15 @@ export const TokenRow: React.FC<TokenRowProps> = ({ token, style }) => {
       </Cell>
       
       <Cell width={120} align="right">
-        {formatPrice(token.priceUsd)}
+        {formattedPrice}
       </Cell>
       
       <Cell width={100} align="right">
-        ${formatNumber(token.mcap)}
+        ${formattedMcap}
       </Cell>
       
       <Cell width={100} align="right">
-        ${formatNumber(token.volumeUsd)}
+        ${formattedVolume}
       </Cell>
       
       <Cell width={80} align="right">
@@ -169,11 +184,11 @@ export const TokenRow: React.FC<TokenRowProps> = ({ token, style }) => {
       </Cell>
       
       <Cell width={60} align="center">
-        {formatAge(token.tokenCreatedTimestamp)}
+        {formattedAge}
       </Cell>
       
       <Cell width={100} align="right">
-        ${formatNumber(token.liquidity.current)}
+        ${formattedLiquidity}
       </Cell>
       
       <Cell width={80} align="right">
@@ -187,13 +202,16 @@ export const TokenRow: React.FC<TokenRowProps> = ({ token, style }) => {
       <Cell width={60} align="center">
         <AuditIndicator>
           <AuditBadge 
-            type={getAuditStatus()} 
-            title={`Verified: ${token.audit.contractVerified}, Mintable: ${token.audit.mintable}, Freezable: ${token.audit.freezable}, Honeypot: ${token.audit.honeypot}`}
+            type={auditStatus} 
+            title={auditTitle}
           />
         </AuditIndicator>
       </Cell>
     </RowContainer>
   );
-};
+});
+
+// Set display name for debugging
+TokenRow.displayName = 'TokenRow';
 
 export default TokenRow;

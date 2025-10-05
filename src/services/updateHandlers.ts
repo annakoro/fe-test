@@ -3,17 +3,11 @@
 import { Dispatch } from '@reduxjs/toolkit';
 import { RootState } from '../store';
 import { 
-  updateTokenPrice as updateTrendingTokenPrice, 
-  updateTokenAudit as updateTrendingTokenAudit,
   batchUpdate as trendingBatchUpdate,
-  updateTokens as updateTrendingTokens,
   removeToken as removeTrendingToken
 } from '../store/slices/trendingTokensSlice';
 import { 
-  updateTokenPrice as updateNewTokenPrice, 
-  updateTokenAudit as updateNewTokenAudit,
   batchUpdate as newTokensBatchUpdate,
-  updateTokens as updateNewTokens,
   removeToken as removeNewToken
 } from '../store/slices/newTokensSlice';
 import { 
@@ -22,7 +16,7 @@ import {
   ScannerPairsEventPayload 
 } from '../types/websocket';
 import { TokenData } from '../types/token';
-import { calculateMarketCap } from '../utils/dataTransform';
+import { debounce, PerformanceMonitor } from '../utils/performanceUtils';
 
 // Batch update configuration
 const BATCH_UPDATE_DELAY = 100; // ms
@@ -63,6 +57,12 @@ class UpdateHandlersService {
 
   private batchTimeout: NodeJS.Timeout | null = null;
   private dispatch: Dispatch | null = null;
+  private performanceMonitor = PerformanceMonitor.getInstance();
+  
+  // Debounced flush function to prevent excessive updates
+  private debouncedFlush = debounce(() => {
+    this.flushBatchedUpdates();
+  }, BATCH_UPDATE_DELAY);
 
   setDispatch(dispatch: Dispatch) {
     this.dispatch = dispatch;
@@ -70,11 +70,14 @@ class UpdateHandlersService {
 
   /**
    * Handle tick events to update prices using priceToken1Usd from latest non-outlier swap
-   * Requirements: 3.3, 8.1
+   * Requirements: 3.3, 8.1, 8.3 (debouncing for rapid successive price updates)
    */
   handleTickEvent(payload: TickEventPayload, state: RootState): void {
+    const endTiming = this.performanceMonitor.startTiming('handleTickEvent');
+    
     if (!this.dispatch) {
       console.error('Dispatch not set in UpdateHandlersService');
+      endTiming();
       return;
     }
 
@@ -82,6 +85,7 @@ class UpdateHandlersService {
     
     // Skip outlier swaps as per requirements
     if (isOutlier) {
+      endTiming();
       return;
     }
 
@@ -112,16 +116,21 @@ class UpdateHandlersService {
       });
     }
     
-    this.scheduleBatchUpdate();
+    // Use debounced flush instead of immediate scheduling
+    this.debouncedFlush();
+    endTiming();
   }
 
   /**
    * Handle pair-stats events to update audit fields
-   * Requirements: 3.4, 8.1
+   * Requirements: 3.4, 8.1, 8.3 (debouncing for rapid successive updates)
    */
   handlePairStatsEvent(payload: PairStatsMsgData, state: RootState): void {
+    const endTiming = this.performanceMonitor.startTiming('handlePairStatsEvent');
+    
     if (!this.dispatch) {
       console.error('Dispatch not set in UpdateHandlersService');
+      endTiming();
       return;
     }
 
@@ -154,7 +163,9 @@ class UpdateHandlersService {
       });
     }
     
-    this.scheduleBatchUpdate();
+    // Use debounced flush instead of immediate scheduling
+    this.debouncedFlush();
+    endTiming();
   }
 
   /**

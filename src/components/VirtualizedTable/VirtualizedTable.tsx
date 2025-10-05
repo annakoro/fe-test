@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState, memo } from 'react';
 import { List } from 'react-window';
 import { useInfiniteLoader } from 'react-window-infinite-loader';
 import styled from 'styled-components';
@@ -7,6 +7,7 @@ import { TokenRow } from '../TokenRow/TokenRow';
 import { TableHeader, TABLE_COLUMNS } from '../TableHeader/TableHeader';
 import { ErrorState } from '../ErrorState';
 import { EmptyState } from '../EmptyState';
+import { PerformanceMonitor } from '../../utils/performanceUtils';
 
 const TableContainer = styled.div`
   height: 600px;
@@ -45,7 +46,7 @@ interface RowRendererProps {
   };
 }
 
-export const VirtualizedTable: React.FC<VirtualizedTableProps> = ({
+export const VirtualizedTable: React.FC<VirtualizedTableProps> = memo(({
   tokens,
   sortConfig,
   onSort,
@@ -54,10 +55,18 @@ export const VirtualizedTable: React.FC<VirtualizedTableProps> = ({
   error,
   onVisibleRangeChange
 }) => {
+  const performanceMonitor = PerformanceMonitor.getInstance();
+  
   // Track visible range for subscription management
   const [visibleRange, setVisibleRange] = useState<{ startIndex: number; endIndex: number } | null>(null);
+  
   // Memoize the token array to prevent unnecessary re-renders
-  const tokenArray = useMemo(() => tokens, [tokens]);
+  const tokenArray = useMemo(() => {
+    const endTiming = performanceMonitor.startTiming('tokenArray_memoization');
+    const result = tokens;
+    endTiming();
+    return result;
+  }, [tokens, performanceMonitor]);
   
   // Calculate total item count (tokens + loading indicator if needed)
   const itemCount = tokenArray.length + (loading ? 1 : 0);
@@ -101,10 +110,13 @@ export const VirtualizedTable: React.FC<VirtualizedTableProps> = ({
     handleRowsRendered({ startIndex: visibleRows.startIndex, endIndex: visibleRows.stopIndex });
   }, [infiniteLoaderOnRowsRendered, handleRowsRendered]);
 
-  // Row renderer for react-window
-  const RowRenderer: React.FC<RowRendererProps> = ({ index, style }) => {
+  // Memoized row renderer for react-window
+  const RowRenderer: React.FC<RowRendererProps> = useMemo(() => memo(({ index, style }) => {
+    const endTiming = performanceMonitor.startTiming('RowRenderer');
+    
     // If this is the loading row
     if (index >= tokenArray.length) {
+      endTiming();
       return (
         <div style={style}>
           <LoadingContainer>
@@ -116,6 +128,7 @@ export const VirtualizedTable: React.FC<VirtualizedTableProps> = ({
 
     const token = tokenArray[index];
     if (!token) {
+      endTiming();
       return (
         <div style={style}>
           <LoadingContainer>
@@ -125,8 +138,10 @@ export const VirtualizedTable: React.FC<VirtualizedTableProps> = ({
       );
     }
 
-    return <TokenRow token={token} style={style} />;
-  };
+    const result = <TokenRow token={token} style={style} />;
+    endTiming();
+    return result;
+  }), [tokenArray, performanceMonitor]);
 
   // Handle retry on error
   const handleRetry = () => {
@@ -202,6 +217,9 @@ export const VirtualizedTable: React.FC<VirtualizedTableProps> = ({
       )}
     </TableContainer>
   );
-};
+});
+
+// Set display name for debugging
+VirtualizedTable.displayName = 'VirtualizedTable';
 
 export default VirtualizedTable;

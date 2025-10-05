@@ -128,6 +128,28 @@ export const newTokensSlice = createSlice({
         }
       });
     },
+
+    // Memory cleanup action to remove old tokens
+    cleanupOldTokens: (state, action: PayloadAction<{ maxAge: number }>) => {
+      const { maxAge } = action.payload;
+      const now = new Date();
+      const tokensToRemove: string[] = [];
+      
+      Object.entries(state.tokens).forEach(([tokenId, token]) => {
+        if (token.lastUpdated) {
+          const age = now.getTime() - token.lastUpdated.getTime();
+          if (age > maxAge) {
+            tokensToRemove.push(tokenId);
+          }
+        }
+      });
+      
+      tokensToRemove.forEach(tokenId => {
+        delete state.tokens[tokenId];
+      });
+      
+      console.log(`Cleaned up ${tokensToRemove.length} old new tokens`);
+    },
   },
 });
 
@@ -142,4 +164,5 @@ export const {
   setPage,
   resetState,
   batchUpdate,
+  cleanupOldTokens,
 } = newTokensSlice.actions;

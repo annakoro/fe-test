@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback, useMemo } from 'react';
+import React, { useEffect, useCallback, useMemo, memo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 import { VirtualizedTable } from '../VirtualizedTable';
@@ -16,6 +16,7 @@ import { createWebSocketService } from '../../services/webSocketService';
 import { transformScannerResult } from '../../utils/dataTransform';
 import { sortTokens } from '../../utils/sortingUtils';
 import { useSubscriptionManager } from '../../hooks/useSubscriptionManager';
+import { PerformanceMonitor } from '../../utils/performanceUtils';
 
 const TableContainer = styled.div`
   flex: 1;
@@ -37,10 +38,11 @@ interface TrendingTokensTableProps {
   webSocketService: ReturnType<typeof createWebSocketService>;
 }
 
-export const TrendingTokensTable: React.FC<TrendingTokensTableProps> = ({
+export const TrendingTokensTable: React.FC<TrendingTokensTableProps> = memo(({
   filters,
   webSocketService
 }) => {
+  const performanceMonitor = PerformanceMonitor.getInstance();
   const dispatch = useDispatch();
   const { tokens, sortConfig, loading, error, hasMore, page } = useSelector(
     (state: AppState) => state.trendingTokens
@@ -199,6 +201,9 @@ export const TrendingTokensTable: React.FC<TrendingTokensTableProps> = ({
       />
     </TableContainer>
   );
-};
+});
+
+// Set display name for debugging
+TrendingTokensTable.displayName = 'TrendingTokensTable';
 
 export default TrendingTokensTable;
