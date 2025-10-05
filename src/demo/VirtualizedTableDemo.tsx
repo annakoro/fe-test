@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { VirtualizedTable } from '../components/VirtualizedTable';
 import { TokenData, SortConfig } from '../types/token';
+import { sortTokens, toggleSortDirection } from '../utils/sortingUtils';
 
 // Generate mock data for demonstration
 const generateMockTokens = (count: number): TokenData[] => {
@@ -54,10 +55,7 @@ export const VirtualizedTableDemo: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   const handleSort = useCallback((column: string) => {
-    setSortConfig(prev => ({
-      column,
-      direction: prev.column === column && prev.direction === 'asc' ? 'desc' : 'asc'
-    }));
+    setSortConfig(prev => toggleSortDirection(prev, column));
   }, []);
 
   const handleLoadMore = useCallback(() => {
@@ -82,23 +80,7 @@ export const VirtualizedTableDemo: React.FC = () => {
   }, [loading, tokens.length]);
 
   const sortedTokens = React.useMemo(() => {
-    const sorted = [...tokens].sort((a, b) => {
-      let aValue: any = a;
-      let bValue: any = b;
-      
-      // Handle nested properties
-      const keys = sortConfig.column.split('.');
-      for (const key of keys) {
-        aValue = aValue?.[key];
-        bValue = bValue?.[key];
-      }
-      
-      if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
-      if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
-      return 0;
-    });
-    
-    return sorted;
+    return sortTokens(tokens, sortConfig);
   }, [tokens, sortConfig]);
 
   const simulateError = () => {

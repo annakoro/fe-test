@@ -39,7 +39,7 @@ import {
   setExcludeHoneypotsFilter,
   resetFilters,
 } from './slices/filtersSlice';
-import { TokenData, FilterState, SortConfig } from '../types';
+import { TokenData, FilterState } from '../types';
 import { SupportedChainName } from '../types/api';
 
 // Typed hooks
@@ -204,48 +204,3 @@ export const useTableStates = () => {
   };
 };
 
-// Hook for sorting functionality
-export const useSorting = (tableType: 'trending' | 'new') => {
-  const dispatch = useAppDispatch();
-  
-  const handleSort = useCallback((column: string) => {
-    const currentState = tableType === 'trending' 
-      ? useAppSelector.getState().trendingTokens.sortConfig
-      : useAppSelector.getState().newTokens.sortConfig;
-    
-    const newDirection = currentState.column === column && currentState.direction === 'asc' 
-      ? 'desc' 
-      : 'asc';
-    
-    if (tableType === 'trending') {
-      dispatch(setTrendingSortConfig({ column, direction: newDirection }));
-    } else {
-      dispatch(setNewTokensSortConfig({ column, direction: newDirection }));
-    }
-  }, [dispatch, tableType]);
-  
-  return { handleSort };
-};
-
-// Hook for pagination
-export const usePagination = (tableType: 'trending' | 'new') => {
-  const dispatch = useAppDispatch();
-  
-  const loadMore = useCallback(() => {
-    const currentState = tableType === 'trending'
-      ? useAppSelector.getState().trendingTokens
-      : useAppSelector.getState().newTokens;
-    
-    if (!currentState.loading && currentState.hasMore) {
-      const nextPage = currentState.page + 1;
-      
-      if (tableType === 'trending') {
-        dispatch(setTrendingPage({ page: nextPage, hasMore: true }));
-      } else {
-        dispatch(setNewTokensPage({ page: nextPage, hasMore: true }));
-      }
-    }
-  }, [dispatch, tableType]);
-  
-  return { loadMore };
-};

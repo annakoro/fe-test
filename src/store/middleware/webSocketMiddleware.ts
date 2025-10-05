@@ -9,7 +9,7 @@ export const webSocketMiddleware: Middleware<{}, RootState> = (store) => {
   // Set dispatch for update handlers service
   updateHandlersService.setDispatch(store.dispatch);
   
-  return (next) => (action: Action) => {
+  return (next) => (action: any) => {
     // Handle WebSocket message actions
     if (action.type === 'websocket/messageReceived') {
       const wsAction = action as PayloadAction<IncomingWebSocketMessage, 'websocket/messageReceived'>;

@@ -26,8 +26,11 @@ export interface PairSubscriptionParams {
  */
 export function createScannerFilterSubscription(params: ScannerFilterParams): OutgoingWebSocketMessage {
   return {
-    type: 'scanner-filter',
-    payload: params
+    type: 'subscribe',
+    payload: {
+      room: 'scanner-filter',
+      params
+    }
   };
 }
 
@@ -36,8 +39,11 @@ export function createScannerFilterSubscription(params: ScannerFilterParams): Ou
  */
 export function createPairStatsSubscription(params: PairStatsParams): OutgoingWebSocketMessage {
   return {
-    type: 'pair-stats',
-    payload: params
+    type: 'subscribe',
+    payload: {
+      room: 'pair-stats',
+      params
+    }
   };
 }
 
@@ -46,8 +52,11 @@ export function createPairStatsSubscription(params: PairStatsParams): OutgoingWe
  */
 export function createPairSubscription(params: PairSubscriptionParams): OutgoingWebSocketMessage {
   return {
-    type: 'pair',
-    payload: params
+    type: 'subscribe',
+    payload: {
+      room: 'pair',
+      params
+    }
   };
 }
 
@@ -59,8 +68,34 @@ export function createMultiplePairSubscriptions(pairAddresses: string[]): Outgoi
 }
 
 /**
- * Creates unsubscription messages (same format as subscription but used for unsubscribing)
+ * Creates unsubscription messages
  */
-export const createScannerFilterUnsubscription = createScannerFilterSubscription;
-export const createPairStatsUnsubscription = createPairStatsSubscription;
-export const createPairUnsubscription = createPairSubscription;
+export function createScannerFilterUnsubscription(params: ScannerFilterParams): OutgoingWebSocketMessage {
+  return {
+    type: 'unsubscribe',
+    payload: {
+      room: 'scanner-filter',
+      params
+    }
+  };
+}
+
+export function createPairStatsUnsubscription(params: PairStatsParams): OutgoingWebSocketMessage {
+  return {
+    type: 'unsubscribe',
+    payload: {
+      room: 'pair-stats',
+      params
+    }
+  };
+}
+
+export function createPairUnsubscription(params: PairSubscriptionParams): OutgoingWebSocketMessage {
+  return {
+    type: 'unsubscribe',
+    payload: {
+      room: 'pair',
+      params
+    }
+  };
+}

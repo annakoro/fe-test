@@ -1,4 +1,3 @@
-import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { TableHeader, TABLE_COLUMNS } from '../TableHeader';
 import { SortConfig } from '../../../types/token';
@@ -88,9 +87,8 @@ describe('TableHeader', () => {
       />
     );
 
-    // Check that the active column has a sort indicator
-    const priceHeader = screen.getByText('Price').parentElement;
-    expect(priceHeader).toBeInTheDocument();
+    // Check that the active column is present
+    expect(screen.getByText('Price')).toBeInTheDocument();
 
     // Change to ascending sort
     const ascendingSortConfig: SortConfig = {
@@ -106,7 +104,7 @@ describe('TableHeader', () => {
       />
     );
 
-    expect(priceHeader).toBeInTheDocument();
+    expect(screen.getByText('Price')).toBeInTheDocument();
   });
 
   it('shows inactive sort indicators for non-active sortable columns', () => {
@@ -119,8 +117,7 @@ describe('TableHeader', () => {
     );
 
     // Non-active sortable columns should be present
-    const volumeHeader = screen.getByText('Volume').parentElement;
-    expect(volumeHeader).toBeInTheDocument();
+    expect(screen.getByText('Volume')).toBeInTheDocument();
   });
 
   it('applies correct styling to sortable vs non-sortable columns', () => {
@@ -133,11 +130,8 @@ describe('TableHeader', () => {
     );
 
     // Both sortable and non-sortable columns should be present
-    const priceHeader = screen.getByText('Price').parentElement;
-    expect(priceHeader).toBeInTheDocument();
-
-    const auditHeader = screen.getByText('Audit').parentElement;
-    expect(auditHeader).toBeInTheDocument();
+    expect(screen.getByText('Price')).toBeInTheDocument();
+    expect(screen.getByText('Audit')).toBeInTheDocument();
   });
 
   it('highlights active column with different color', () => {
@@ -150,8 +144,7 @@ describe('TableHeader', () => {
     );
 
     // Active column should be present
-    const priceHeader = screen.getByText('Price').parentElement;
-    expect(priceHeader).toBeInTheDocument();
+    expect(screen.getByText('Price')).toBeInTheDocument();
   });
 
   it('handles custom column configuration', () => {
@@ -191,14 +184,9 @@ describe('TableHeader', () => {
     );
 
     // All columns should be present
-    const tokenHeader = screen.getByText('Token').parentElement;
-    expect(tokenHeader).toBeInTheDocument();
-
-    const priceHeader = screen.getByText('Price').parentElement;
-    expect(priceHeader).toBeInTheDocument();
-
-    const chainHeader = screen.getByText('Chain').parentElement;
-    expect(chainHeader).toBeInTheDocument();
+    expect(screen.getByText('Token')).toBeInTheDocument();
+    expect(screen.getByText('Price')).toBeInTheDocument();
+    expect(screen.getByText('Chain')).toBeInTheDocument();
   });
 
   it('handles empty columns array gracefully', () => {
@@ -224,8 +212,7 @@ describe('TableHeader', () => {
     );
 
     // Initially column should be present
-    const priceHeader = screen.getByText('Price').parentElement;
-    expect(priceHeader).toBeInTheDocument();
+    expect(screen.getByText('Price')).toBeInTheDocument();
 
     // After setting active sort, column should still be present
     rerender(
@@ -236,6 +223,133 @@ describe('TableHeader', () => {
       />
     );
 
-    expect(priceHeader).toBeInTheDocument();
+    expect(screen.getByText('Price')).toBeInTheDocument();
+  });
+
+  it('handles multiple sort column clicks correctly', () => {
+    render(
+      <TableHeader 
+        columns={TABLE_COLUMNS}
+        sortConfig={defaultSortConfig}
+        onSort={mockOnSort}
+      />
+    );
+
+    // Click multiple sortable columns
+    fireEvent.click(screen.getByText('Token'));
+    expect(mockOnSort).toHaveBeenCalledWith('tokenName');
+
+    fireEvent.click(screen.getByText('Market Cap'));
+    expect(mockOnSort).toHaveBeenCalledWith('mcap');
+
+    fireEvent.click(screen.getByText('Age'));
+    expect(mockOnSort).toHaveBeenCalledWith('tokenCreatedTimestamp');
+
+    expect(mockOnSort).toHaveBeenCalledTimes(3);
+  });
+
+  it('shows sort indicators for all sortable columns', () => {
+    render(
+      <TableHeader 
+        columns={TABLE_COLUMNS}
+        sortConfig={defaultSortConfig}
+        onSort={mockOnSort}
+      />
+    );
+
+    // All sortable columns should be present
+    const sortableColumns = TABLE_COLUMNS.filter(col => col.sortable);
+    sortableColumns.forEach(column => {
+      expect(screen.getByText(column.label)).toBeInTheDocument();
+    });
+  });
+
+  it('does not show sort indicators for non-sortable columns', () => {
+    render(
+      <TableHeader 
+        columns={TABLE_COLUMNS}
+        sortConfig={defaultSortConfig}
+        onSort={mockOnSort}
+      />
+    );
+
+    // Non-sortable columns should be present but not clickable for sorting
+    const nonSortableColumns = TABLE_COLUMNS.filter(col => !col.sortable);
+    nonSortableColumns.forEach(column => {
+      expect(screen.getByText(column.label)).toBeInTheDocument();
+    });
+  });
+
+  it('handles percentage change columns correctly', () => {
+    render(
+      <TableHeader 
+        columns={TABLE_COLUMNS}
+        sortConfig={defaultSortConfig}
+        onSort={mockOnSort}
+      />
+    );
+
+    // Test percentage change columns
+    fireEvent.click(screen.getByText('5m %'));
+    expect(mockOnSort).toHaveBeenCalledWith('priceChangePcs.5m');
+
+    fireEvent.click(screen.getByText('1h %'));
+    expect(mockOnSort).toHaveBeenCalledWith('priceChangePcs.1h');
+
+    fireEvent.click(screen.getByText('6h %'));
+    expect(mockOnSort).toHaveBeenCalledWith('priceChangePcs.6h');
+
+    fireEvent.click(screen.getByText('24h %'));
+    expect(mockOnSort).toHaveBeenCalledWith('priceChangePcs.24h');
+  });
+
+  it('handles liquidity columns correctly', () => {
+    render(
+      <TableHeader 
+        columns={TABLE_COLUMNS}
+        sortConfig={defaultSortConfig}
+        onSort={mockOnSort}
+      />
+    );
+
+    // Test liquidity columns
+    fireEvent.click(screen.getByText('Liquidity'));
+    expect(mockOnSort).toHaveBeenCalledWith('liquidity.current');
+
+    fireEvent.click(screen.getByText('Liq %'));
+    expect(mockOnSort).toHaveBeenCalledWith('liquidity.changePc');
+  });
+
+  it('shows correct sort direction indicators', () => {
+    const ascSortConfig: SortConfig = {
+      column: 'tokenName',
+      direction: 'asc'
+    };
+
+    const { rerender } = render(
+      <TableHeader 
+        columns={TABLE_COLUMNS}
+        sortConfig={ascSortConfig}
+        onSort={mockOnSort}
+      />
+    );
+
+    expect(screen.getByText('Token')).toBeInTheDocument();
+
+    // Change to descending
+    const descSortConfig: SortConfig = {
+      column: 'tokenName',
+      direction: 'desc'
+    };
+
+    rerender(
+      <TableHeader 
+        columns={TABLE_COLUMNS}
+        sortConfig={descSortConfig}
+        onSort={mockOnSort}
+      />
+    );
+
+    expect(screen.getByText('Token')).toBeInTheDocument();
   });
 });

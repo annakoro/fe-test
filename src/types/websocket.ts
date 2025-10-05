@@ -1,8 +1,11 @@
 // WebSocket Types for real-time updates
 
 export interface OutgoingWebSocketMessage {
-  type: 'scanner-filter' | 'pair-stats' | 'pair';
-  payload: any;
+  type: 'subscribe' | 'unsubscribe';
+  payload: {
+    room: 'scanner-filter' | 'pair-stats' | 'pair';
+    params?: any;
+  };
 }
 
 export interface IncomingWebSocketMessage {

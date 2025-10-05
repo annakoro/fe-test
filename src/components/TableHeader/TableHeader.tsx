@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { TableHeaderProps, TableColumn } from '../../types/components';
+import { toggleSortDirection } from '../../utils/sortingUtils';
 
 const HeaderContainer = styled.div`
   display: flex;
@@ -52,6 +53,7 @@ const SortIcon = styled.span<{ direction: 'asc' | 'desc' | null }>`
   margin-left: 4px;
   font-size: 10px;
   opacity: ${props => props.direction ? 1 : 0.3};
+  transition: opacity 0.2s ease;
   
   &::after {
     content: ${props => {
@@ -81,6 +83,11 @@ export const TABLE_COLUMNS: TableColumn[] = [
   { key: 'audit', label: 'Audit', sortable: false, width: 60 },
 ];
 
+// Columns that should default to descending sort
+export const DEFAULT_DESC_COLUMNS = [
+  'priceUsd', 'mcap', 'volumeUsd', 'transactions', 'tokenCreatedTimestamp', 'liquidity.current'
+];
+
 export const TableHeader: React.FC<TableHeaderProps> = ({ 
   columns = TABLE_COLUMNS, 
   sortConfig, 
@@ -88,10 +95,13 @@ export const TableHeader: React.FC<TableHeaderProps> = ({
 }) => {
   const handleSort = (columnKey: string, sortable: boolean) => {
     if (!sortable) return;
-    onSort(columnKey);
+    
+    // Calculate the new sort configuration
+    const newSortConfig = toggleSortDirection(sortConfig, columnKey);
+    onSort(newSortConfig.column);
   };
 
-  const getSortDirection = (columnKey: string) => {
+  const getSortDirection = (columnKey: string): 'asc' | 'desc' | null => {
     if (sortConfig.column === columnKey) {
       return sortConfig.direction;
     }

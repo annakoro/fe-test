@@ -3,6 +3,7 @@
 import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from './index';
 import { TokenData } from '../types';
+import { sortTokens, sortNewTokens } from '../utils/sortingUtils';
 
 // Basic selectors
 export const selectTrendingTokensState = (state: RootState) => state.trendingTokens;
@@ -19,25 +20,7 @@ export const selectTrendingTokensArray = createSelector(
 export const selectSortedTrendingTokens = createSelector(
   [selectTrendingTokensArray, (state: RootState) => state.trendingTokens.sortConfig],
   (tokens, sortConfig) => {
-    return [...tokens].sort((a, b) => {
-      const { column, direction } = sortConfig;
-      let aValue: any = getNestedValue(a, column);
-      let bValue: any = getNestedValue(b, column);
-      
-      // Handle different data types
-      if (typeof aValue === 'string') {
-        aValue = aValue.toLowerCase();
-        bValue = bValue.toLowerCase();
-      }
-      
-      if (aValue < bValue) {
-        return direction === 'asc' ? -1 : 1;
-      }
-      if (aValue > bValue) {
-        return direction === 'asc' ? 1 : -1;
-      }
-      return 0;
-    });
+    return sortTokens(tokens, sortConfig);
   }
 );
 
@@ -51,28 +34,7 @@ export const selectNewTokensArray = createSelector(
 export const selectSortedNewTokens = createSelector(
   [selectNewTokensArray, (state: RootState) => state.newTokens.sortConfig],
   (tokens, sortConfig) => {
-    return [...tokens].sort((a, b) => {
-      const { column, direction } = sortConfig;
-      let aValue: any = getNestedValue(a, column);
-      let bValue: any = getNestedValue(b, column);
-      
-      // Handle Date objects for age sorting
-      if (column === 'tokenCreatedTimestamp') {
-        aValue = new Date(aValue).getTime();
-        bValue = new Date(bValue).getTime();
-      } else if (typeof aValue === 'string') {
-        aValue = aValue.toLowerCase();
-        bValue = bValue.toLowerCase();
-      }
-      
-      if (aValue < bValue) {
-        return direction === 'asc' ? -1 : 1;
-      }
-      if (aValue > bValue) {
-        return direction === 'asc' ? 1 : -1;
-      }
-      return 0;
-    });
+    return sortNewTokens(tokens, sortConfig);
   }
 );
 
@@ -110,10 +72,10 @@ export const selectAnyTableError = createSelector(
   (trendingError, newError) => trendingError || newError
 );
 
-// Utility functions
-function getNestedValue(obj: any, path: string): any {
-  return path.split('.').reduce((current, key) => current?.[key], obj);
-}
+// Utility functions (kept for potential future use)
+// function getNestedValue(obj: any, path: string): any {
+//   return path.split('.').reduce((current, key) => current?.[key], obj);
+// }
 
 function applyFilters(tokens: TokenData[], filters: any): TokenData[] {
   return tokens.filter(token => {
