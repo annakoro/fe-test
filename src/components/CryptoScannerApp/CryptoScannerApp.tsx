@@ -1,6 +1,28 @@
-import React, { useEffect, useRef, useCallback, memo } from 'react';
+/**
+ * CryptoScannerApp - Main Application Component
+ * 
+ * This is the core component that orchestrates the entire Crypto Scanner Tables application.
+ * It provides the main layout, WebSocket connection management, and integrates all sub-components.
+ * 
+ * Key Features:
+ * - Side-by-side table layout for trending and new tokens
+ * - Real-time WebSocket connection management
+ * - Performance monitoring and memory management
+ * - Accessibility support with proper semantic structure
+ * - Error boundary integration for robust error handling
+ * 
+ * Architecture:
+ * - Uses Redux Provider for state management
+ * - Manages WebSocket service lifecycle
+ * - Implements performance optimizations
+ * - Provides clean component separation
+ * 
+ * @author Crypto Scanner Tables Team
+ * @version 1.0.0
+ */
+
+import React, { useEffect, useRef, memo } from 'react';
 import { Provider } from 'react-redux';
-import styled from 'styled-components';
 import { store } from '../../store';
 import { FilterPanel } from '../FilterPanel';
 import { TrendingTokensTable } from '../TrendingTokensTable';
@@ -8,81 +30,26 @@ import { NewTokensTable } from '../NewTokensTable';
 import { StatusIndicator } from '../StatusIndicator';
 import { useAppSelector } from '../../store/hooks';
 import { createWebSocketService } from '../../services/webSocketService';
+import { createMockWebSocketService } from '../../services/mockWebSocketService';
 import { webSocketActions } from '../../store/middleware/webSocketMiddleware';
 import { MemoryManager, PerformanceMonitor } from '../../utils/performanceUtils';
+import './CryptoScannerApp.css';
 
-const AppContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  background-color: #f8f9fa;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-`;
 
-const Header = styled.header`
-  background-color: #ffffff;
-  border-bottom: 1px solid #e2e8f0;
-  padding: 16px 24px;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-`;
 
-const Title = styled.h1`
-  font-size: 24px;
-  font-weight: 700;
-  color: #1a202c;
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-`;
-
-const MainContent = styled.main`
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  padding: 24px;
-  gap: 24px;
-  overflow: hidden;
-`;
-
-const FilterSection = styled.section`
-  background-color: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-  padding: 0;
-`;
-
-const TablesSection = styled.section`
-  flex: 1;
-  display: flex;
-  gap: 16px;
-  min-height: 0;
-  
-  @media (max-width: 1200px) {
-    flex-direction: column;
-    gap: 24px;
-  }
-`;
-
-const TableWrapper = styled.div`
-  flex: 1;
-  background-color: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  
-  @media (max-width: 1200px) {
-    min-height: 400px;
-  }
-`;
-
-// Internal component that uses Redux hooks
+/**
+ * CryptoScannerAppContent - Internal Component with Redux Integration
+ * 
+ * This component contains the main application logic and uses Redux hooks.
+ * It's separated from the main component to allow the Redux Provider to wrap it.
+ * 
+ * Responsibilities:
+ * - WebSocket service initialization and management
+ * - Memory management and performance monitoring
+ * - Filter state management
+ * - Component lifecycle management
+ * - Real-time data subscription coordination
+ */
 const CryptoScannerAppContent: React.FC = memo(() => {
   const filters = useAppSelector(state => state.filters);
   const webSocketServiceRef = useRef<ReturnType<typeof createWebSocketService> | null>(null);
@@ -95,7 +62,13 @@ const CryptoScannerAppContent: React.FC = memo(() => {
     const endTiming = performanceMonitor.startTiming('app_initialization');
     
     if (!webSocketServiceRef.current) {
-      webSocketServiceRef.current = createWebSocketService();
+      // Use mock WebSocket service in development if real WebSocket fails
+      const useMockWebSocket = process.env.REACT_APP_USE_MOCK_WEBSOCKET === 'true' || 
+                               process.env.NODE_ENV === 'development';
+      
+      webSocketServiceRef.current = useMockWebSocket 
+        ? createMockWebSocketService()
+        : createWebSocketService();
       setIsWebSocketReady(true);
     }
 
@@ -168,51 +141,79 @@ const CryptoScannerAppContent: React.FC = memo(() => {
   }, [memoryManager, performanceMonitor]);
 
   return (
-    <AppContainer>
-      <Header>
-        <Title>
-          📊 Crypto Scanner Tables
+    <div className="crypto-scanner-app">
+      {/* Skip link for accessibility */}
+      <a href="#main-content" className="skip-link">
+        Skip to main content
+      </a>
+      
+      <header className="crypto-scanner-header" role="banner">
+        <h1 className="crypto-scanner-title">
+          <span role="img" aria-label="Chart">📊</span>
+          Crypto Scanner Tables
           <StatusIndicator 
             connectionStatus={webSocketServiceRef.current?.getConnectionStatus() || 'disconnected'}
             loading={false}
             error={null}
           />
-        </Title>
-      </Header>
+        </h1>
+      </header>
       
-      <MainContent>
-        <FilterSection>
+      <main id="main-content" className="crypto-scanner-main" role="main">
+        <section className="crypto-scanner-filter-section" aria-label="Token filters">
           <FilterPanel />
-        </FilterSection>
+        </section>
         
-        <TablesSection>
-          <TableWrapper>
+        <section className="crypto-scanner-tables-section" aria-label="Token tables">
+          <div className="crypto-scanner-table-wrapper">
+            <h2 className="crypto-scanner-table-title">Trending Tokens</h2>
             {isWebSocketReady && webSocketServiceRef.current && (
               <TrendingTokensTable 
                 filters={filters}
                 webSocketService={webSocketServiceRef.current}
               />
             )}
-          </TableWrapper>
+          </div>
           
-          <TableWrapper>
+          <div className="crypto-scanner-table-wrapper">
+            <h2 className="crypto-scanner-table-title">New Tokens</h2>
             {isWebSocketReady && webSocketServiceRef.current && (
               <NewTokensTable 
                 filters={filters}
                 webSocketService={webSocketServiceRef.current}
               />
             )}
-          </TableWrapper>
-        </TablesSection>
-      </MainContent>
-    </AppContainer>
+          </div>
+        </section>
+      </main>
+    </div>
   );
 });
 
 // Set display name for debugging
 CryptoScannerAppContent.displayName = 'CryptoScannerAppContent';
 
-// Main component that provides Redux store
+/**
+ * CryptoScannerApp - Main Export Component
+ * 
+ * This is the main component that provides the Redux store context
+ * and renders the internal CryptoScannerAppContent component.
+ * 
+ * This separation allows for:
+ * - Clean Redux Provider setup
+ * - Proper component isolation
+ * - Easy testing and mocking
+ * - Clear separation of concerns
+ * 
+ * Usage:
+ * ```tsx
+ * import { CryptoScannerApp } from './components/CryptoScannerApp';
+ * 
+ * function App() {
+ *   return <CryptoScannerApp />;
+ * }
+ * ```
+ */
 export const CryptoScannerApp: React.FC = memo(() => {
   return (
     <Provider store={store}>

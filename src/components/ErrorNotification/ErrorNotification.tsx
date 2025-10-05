@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { ErrorNotification as ErrorNotificationType } from '../../utils/errorHandler';
 
@@ -187,6 +187,13 @@ export const ErrorNotification: React.FC<ErrorNotificationProps> = ({
 }) => {
   const [isExiting, setIsExiting] = useState(false);
 
+  const handleDismiss = useCallback(() => {
+    setIsExiting(true);
+    setTimeout(() => {
+      onDismiss(notification.id);
+    }, 300); // Match animation duration
+  }, [onDismiss, notification.id]);
+
   useEffect(() => {
     if (autoHide && notification.type !== 'error') {
       const timer = setTimeout(() => {
@@ -196,13 +203,6 @@ export const ErrorNotification: React.FC<ErrorNotificationProps> = ({
       return () => clearTimeout(timer);
     }
   }, [autoHide, autoHideDelay, handleDismiss, notification.type]);
-
-  const handleDismiss = () => {
-    setIsExiting(true);
-    setTimeout(() => {
-      onDismiss(notification.id);
-    }, 300); // Match animation duration
-  };
 
   const getIcon = (type: 'error' | 'warning' | 'info') => {
     switch (type) {

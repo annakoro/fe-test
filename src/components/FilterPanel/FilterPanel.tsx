@@ -1,5 +1,6 @@
 import React from 'react';
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
+import './FilterPanel.css';
 import { 
   setChainFilter,
   setMinVolumeFilter,

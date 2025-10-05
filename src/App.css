@@ -1,38 +1,134 @@
-.App {
-  text-align: center;
-}
+/* Crypto Scanner App Specific Styles */
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
+.crypto-scanner-app {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  background-color: var(--bg-secondary);
+}
+
+.crypto-scanner-header {
+  background-color: var(--bg-primary);
+  border-bottom: 1px solid var(--border-light);
+  padding: var(--space-4) var(--space-6);
+  box-shadow: var(--shadow-sm);
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+}
+
+.crypto-scanner-title {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  margin: 0;
+  display: flex;
   align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  gap: var(--space-3);
 }
 
-.App-link {
-  color: #61dafb;
+.crypto-scanner-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-6);
+  gap: var(--space-6);
+  overflow: hidden;
+  max-width: 100%;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
+.crypto-scanner-filter-section {
+  background-color: var(--bg-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 0;
+  border: 1px solid var(--border-light);
+}
+
+.crypto-scanner-tables-section {
+  flex: 1;
+  display: flex;
+  gap: var(--space-4);
+  min-height: 0;
+  overflow: hidden;
+}
+
+.crypto-scanner-table-wrapper {
+  flex: 1;
+  background-color: var(--bg-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border: 1px solid var(--border-light);
+  overflow: hidden;
+}
+
+.crypto-scanner-table-title {
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--border-light);
+  background-color: var(--bg-secondary);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .crypto-scanner-tables-section {
+    flex-direction: column;
+    gap: var(--space-6);
   }
-  to {
-    transform: rotate(360deg);
+  
+  .crypto-scanner-table-wrapper {
+    min-height: 400px;
+  }
+}
+
+@media (max-width: 768px) {
+  .crypto-scanner-main {
+    padding: var(--space-4);
+    gap: var(--space-4);
+  }
+  
+  .crypto-scanner-header {
+    padding: var(--space-3) var(--space-4);
+  }
+  
+  .crypto-scanner-title {
+    font-size: var(--font-size-xl);
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
+  }
+  
+  .crypto-scanner-tables-section {
+    gap: var(--space-4);
+  }
+  
+  .crypto-scanner-table-wrapper {
+    min-height: 350px;
+  }
+}
+
+@media (max-width: 480px) {
+  .crypto-scanner-main {
+    padding: var(--space-3);
+    gap: var(--space-3);
+  }
+  
+  .crypto-scanner-header {
+    padding: var(--space-2) var(--space-3);
+  }
+  
+  .crypto-scanner-title {
+    font-size: var(--font-size-lg);
+  }
+  
+  .crypto-scanner-table-title {
+    padding: var(--space-3) var(--space-4);
+    font-size: var(--font-size-base);
   }
 }

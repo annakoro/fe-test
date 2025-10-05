@@ -1,68 +1,45 @@
 import React from 'react';
-import styled from 'styled-components';
 import { TableHeaderProps, TableColumn } from '../../types/components';
 import { toggleSortDirection } from '../../utils/sortingUtils';
+import '../../styles/table.css';
 
-const HeaderContainer = styled.div`
-  display: flex;
-  align-items: center;
-  padding: 12px;
-  background-color: #f8f9fa;
-  border-bottom: 2px solid #dee2e6;
-  font-weight: 600;
-  font-size: 12px;
-  color: #495057;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-`;
-
-const HeaderCell = styled.div<{ 
-  width?: number; 
-  align?: 'left' | 'center' | 'right';
-  $sortable?: boolean;
-  $active?: boolean;
-}>`
-  flex: ${props => props.width ? `0 0 ${props.width}px` : '1'};
-  padding: 0 8px;
-  text-align: ${props => props.align || 'left'};
-  cursor: ${props => props.$sortable ? 'pointer' : 'default'};
-  user-select: none;
-  display: flex;
-  align-items: center;
-  justify-content: ${props => {
-    switch (props.align) {
-      case 'center': return 'center';
-      case 'right': return 'flex-end';
-      default: return 'flex-start';
-    }
-  }};
+// Define responsive column visibility classes
+const getColumnClasses = (columnKey: string): string => {
+  const baseClass = `crypto-table-header-cell crypto-table-col-${getColumnType(columnKey)}`;
   
-  ${props => props.$sortable && `
-    &:hover {
-      background-color: #e9ecef;
-      border-radius: 4px;
-    }
-  `}
-  
-  ${props => props.$active && `
-    color: #007bff;
-  `}
-`;
-
-const SortIcon = styled.span<{ direction: 'asc' | 'desc' | null }>`
-  margin-left: 4px;
-  font-size: 10px;
-  opacity: ${props => props.direction ? 1 : 0.3};
-  transition: opacity 0.2s ease;
-  
-  &::after {
-    content: ${props => {
-      if (props.direction === 'asc') return '"▲"';
-      if (props.direction === 'desc') return '"▼"';
-      return '"▲"';
-    }};
+  switch (columnKey) {
+    case 'chain':
+      return `${baseClass} hide-sm`;
+    case 'mcap':
+    case 'volumeUsd':
+    case 'transactions':
+      return `${baseClass} hide-md`;
+    case 'priceChangePcs.5m':
+    case 'priceChangePcs.1h':
+    case 'priceChangePcs.6h':
+    case 'exchange':
+    case 'liquidity.current':
+    case 'liquidity.changePc':
+      return `${baseClass} hide-lg`;
+    default:
+      return baseClass;
   }
-`;
+};
+
+const getColumnType = (columnKey: string): string => {
+  if (columnKey === 'tokenName') return 'token';
+  if (columnKey === 'chain') return 'chain';
+  if (columnKey === 'priceUsd') return 'price';
+  if (columnKey === 'mcap') return 'mcap';
+  if (columnKey === 'volumeUsd') return 'volume';
+  if (columnKey.includes('priceChangePcs') || columnKey.includes('changePc')) return 'change';
+  if (columnKey === 'transactions') return 'txns';
+  if (columnKey === 'exchange') return 'exchange';
+  if (columnKey === 'tokenCreatedTimestamp') return 'age';
+  if (columnKey.includes('liquidity')) return 'liquidity';
+  if (columnKey === 'audit') return 'audit';
+  return 'change';
+};
 
 // Define the table columns with their properties
 export const TABLE_COLUMNS: TableColumn[] = [
@@ -124,23 +101,51 @@ export const TableHeader: React.FC<TableHeaderProps> = ({
   };
 
   return (
-    <HeaderContainer>
-      {columns.map((column) => (
-        <HeaderCell
-          key={column.key}
-          width={column.width}
-          align={getAlignment(column.key)}
-          $sortable={column.sortable}
-          $active={sortConfig.column === column.key}
-          onClick={() => handleSort(column.key, column.sortable)}
-        >
-          {column.label}
-          {column.sortable && (
-            <SortIcon direction={getSortDirection(column.key)} />
-          )}
-        </HeaderCell>
-      ))}
-    </HeaderContainer>
+    <div className="crypto-table-header" role="rowgroup">
+      <div role="row">
+        {columns.map((column) => {
+          const isActive = sortConfig.column === column.key;
+          const sortDirection = getSortDirection(column.key);
+          const alignment = getAlignment(column.key);
+          
+          return (
+            <div
+              key={column.key}
+              className={`${getColumnClasses(column.key)} align-${alignment} ${column.sortable ? 'sortable' : ''} ${isActive ? 'active' : ''}`}
+              role="columnheader"
+              tabIndex={column.sortable ? 0 : -1}
+              onClick={() => handleSort(column.key, column.sortable)}
+              onKeyDown={(e) => {
+                if (column.sortable && (e.key === 'Enter' || e.key === ' ')) {
+                  e.preventDefault();
+                  handleSort(column.key, column.sortable);
+                }
+              }}
+              aria-sort={
+                isActive 
+                  ? sortDirection === 'asc' ? 'ascending' : 'descending'
+                  : column.sortable ? 'none' : undefined
+              }
+              aria-label={
+                column.sortable 
+                  ? `Sort by ${column.label} ${isActive ? (sortDirection === 'asc' ? 'descending' : 'ascending') : ''}`
+                  : column.label
+              }
+            >
+              {column.label}
+              {column.sortable && (
+                <span 
+                  className={`crypto-table-sort-icon ${isActive ? 'active' : ''}`}
+                  aria-hidden="true"
+                >
+                  {sortDirection === 'asc' ? '▲' : sortDirection === 'desc' ? '▼' : '▲'}
+                </span>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
 };
 

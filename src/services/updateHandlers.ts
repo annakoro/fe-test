@@ -13,7 +13,7 @@ import {
 import { 
   TickEventPayload, 
   PairStatsMsgData, 
-  ScannerPairsEventPayload 
+  ScannerPairsEventPayload
 } from '../types/websocket';
 import { TokenData } from '../types/token';
 import { debounce, PerformanceMonitor } from '../utils/performanceUtils';
@@ -217,6 +217,8 @@ class UpdateHandlersService {
       });
     }
   }
+
+
 
   /**
    * Calculate new market cap based on existing token data and new price

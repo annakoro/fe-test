@@ -1,120 +1,77 @@
-import React, { useState, useEffect } from 'react';
-import { FilterPanelDemo } from './demo/FilterPanelDemo';
-import { VirtualizedTableDemo } from './demo/VirtualizedTableDemo';
-import { SortingDemo } from './demo/SortingDemo';
-import { TableComponentsDemo } from './demo/TableComponentsDemo';
+import React, { useEffect } from 'react';
 import { CryptoScannerApp } from './components/CryptoScannerApp';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { NotificationManager } from './components/NotificationManager';
 import { errorHandler } from './utils/errorHandler';
+import { PerformanceMonitor } from './utils/performanceUtils';
 
+/**
+ * Main Application Component
+ * 
+ * This is the root component that initializes the Crypto Scanner Tables application.
+ * It provides global error handling, performance monitoring, and notification management.
+ * 
+ * Features:
+ * - Global error boundary for unhandled errors
+ * - Performance monitoring initialization
+ * - Notification system for user feedback
+ * - Accessibility support with proper semantic structure
+ */
 function App() {
-  const [activeDemo, setActiveDemo] = useState<'crypto-scanner' | 'filter' | 'table' | 'sorting' | 'task10'>('crypto-scanner');
-
   useEffect(() => {
+    const performanceMonitor = PerformanceMonitor.getInstance();
+    const endTiming = performanceMonitor.startTiming('app_startup');
+
     // Initialize global error handler
     errorHandler.initialize();
+
+    // Log application startup
+    console.log('🚀 Crypto Scanner Tables Application Started');
+    console.log('Environment:', process.env.NODE_ENV);
+    console.log('Version:', process.env.REACT_APP_VERSION || '1.0.0');
+
+    endTiming();
 
     // Cleanup on unmount
     return () => {
       errorHandler.cleanup();
+      console.log('🛑 Crypto Scanner Tables Application Stopped');
     };
   }, []);
 
   return (
     <ErrorBoundary
       onError={(error, errorInfo, errorId) => {
-        // Custom error handling logic
-        console.error('App Error Boundary caught error:', { error, errorInfo, errorId });
+        // Log critical application errors
+        console.error('🚨 Critical Application Error:', { 
+          error: error.message, 
+          errorInfo, 
+          errorId,
+          timestamp: new Date().toISOString()
+        });
+        
+        // Report to monitoring service in production
+        if (process.env.NODE_ENV === 'production') {
+          // Integration with error reporting service would go here
+          // e.g., Sentry.captureException(error, { extra: errorInfo });
+        }
       }}
     >
-      <div>
-        <nav style={{ padding: '20px', borderBottom: '1px solid #ccc', backgroundColor: '#f8f9fa' }}>
-          <button 
-            onClick={() => setActiveDemo('crypto-scanner')}
-            style={{ 
-              marginRight: '10px',
-              backgroundColor: activeDemo === 'crypto-scanner' ? '#28a745' : '#ffffff',
-              color: activeDemo === 'crypto-scanner' ? 'white' : 'black',
-              border: '1px solid #28a745',
-              padding: '10px 20px',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontWeight: activeDemo === 'crypto-scanner' ? 'bold' : 'normal'
-            }}
-          >
-            🚀 Task 12: Crypto Scanner App
-          </button>
-          <button 
-            onClick={() => setActiveDemo('task10')}
-            style={{ 
-              marginRight: '10px',
-              backgroundColor: activeDemo === 'task10' ? '#007bff' : '#ffffff',
-              color: activeDemo === 'task10' ? 'white' : 'black',
-              border: '1px solid #007bff',
-              padding: '10px 20px',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontWeight: activeDemo === 'task10' ? 'bold' : 'normal'
-            }}
-          >
-            Task 10: Table Components
-          </button>
-          <button 
-            onClick={() => setActiveDemo('filter')}
-            style={{ 
-              marginRight: '10px', 
-              backgroundColor: activeDemo === 'filter' ? '#007bff' : '#ffffff',
-              color: activeDemo === 'filter' ? 'white' : 'black',
-              border: '1px solid #007bff',
-              padding: '10px 20px',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontWeight: activeDemo === 'filter' ? 'bold' : 'normal'
-            }}
-          >
-            Filter Panel Demo
-          </button>
-          <button 
-            onClick={() => setActiveDemo('table')}
-            style={{ 
-              marginRight: '10px',
-              backgroundColor: activeDemo === 'table' ? '#007bff' : '#ffffff',
-              color: activeDemo === 'table' ? 'white' : 'black',
-              border: '1px solid #007bff',
-              padding: '10px 20px',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontWeight: activeDemo === 'table' ? 'bold' : 'normal'
-            }}
-          >
-            Virtualized Table Demo
-          </button>
-          <button 
-            onClick={() => setActiveDemo('sorting')}
-            style={{ 
-              backgroundColor: activeDemo === 'sorting' ? '#007bff' : '#ffffff',
-              color: activeDemo === 'sorting' ? 'white' : 'black',
-              border: '1px solid #007bff',
-              padding: '10px 20px',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontWeight: activeDemo === 'sorting' ? 'bold' : 'normal'
-            }}
-          >
-            Sorting Demo
-          </button>
-        </nav>
+      <div className="app-container">
+        {/* Skip link for accessibility */}
+        <a href="#main-app" className="skip-link">
+          Skip to main application
+        </a>
         
-        <ErrorBoundary resetKeys={[activeDemo]}>
-          {activeDemo === 'crypto-scanner' && <CryptoScannerApp />}
-          {activeDemo === 'task10' && <TableComponentsDemo />}
-          {activeDemo === 'filter' && <FilterPanelDemo />}
-          {activeDemo === 'table' && <VirtualizedTableDemo />}
-          {activeDemo === 'sorting' && <SortingDemo />}
-        </ErrorBoundary>
+        {/* Main application content */}
+        <main id="main-app" role="main">
+          <CryptoScannerApp />
+        </main>
         
-        <NotificationManager maxNotifications={3} />
+        {/* Global notification system */}
+        <NotificationManager 
+          maxNotifications={5}
+        />
       </div>
     </ErrorBoundary>
   );

@@ -209,20 +209,7 @@ export class DexcelerateApiService implements ApiService {
   }
 }
 
-/**
- * Custom error class for API-related errors
- * @deprecated Use ApiError from errorUtils instead
- */
-export class ApiError extends Error {
-  constructor(
-    message: string,
-    public readonly status: number,
-    public readonly type: 'HTTP_ERROR' | 'NETWORK_ERROR' | 'TIMEOUT' | 'VALIDATION_ERROR' | 'UNKNOWN_ERROR'
-  ) {
-    super(message);
-    this.name = 'ApiError';
-  }
-}
+
 
 // Export a default instance using environment variables
 export const apiService = new DexcelerateApiService();

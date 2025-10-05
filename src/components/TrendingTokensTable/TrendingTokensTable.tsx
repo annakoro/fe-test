@@ -16,7 +16,7 @@ import { createWebSocketService } from '../../services/webSocketService';
 import { transformScannerResult } from '../../utils/dataTransform';
 import { sortTokens } from '../../utils/sortingUtils';
 import { useSubscriptionManager } from '../../hooks/useSubscriptionManager';
-import { PerformanceMonitor } from '../../utils/performanceUtils';
+// import { PerformanceMonitor } from '../../utils/performanceUtils';
 
 const TableContainer = styled.div`
   flex: 1;
@@ -42,7 +42,7 @@ export const TrendingTokensTable: React.FC<TrendingTokensTableProps> = memo(({
   filters,
   webSocketService
 }) => {
-  const performanceMonitor = PerformanceMonitor.getInstance();
+  // const performanceMonitor = PerformanceMonitor.getInstance();
   const dispatch = useDispatch();
   const { tokens, sortConfig, loading, error, hasMore, page } = useSelector(
     (state: AppState) => state.trendingTokens
@@ -58,11 +58,7 @@ export const TrendingTokensTable: React.FC<TrendingTokensTableProps> = memo(({
   }, [tokens, sortConfig]);
 
   // Initialize subscription manager for visible tokens
-  const {
-    subscriptionStats,
-    getSubscriptionStatus,
-    retryFailedSubscriptions
-  } = useSubscriptionManager({
+  useSubscriptionManager({
     webSocketService,
     tokens: sortedTokens,
     visibleRange: visibleRange || undefined,

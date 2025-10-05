@@ -1,5 +1,8 @@
 import { errorHandler } from './errorHandler';
 
+// Re-export errorHandler for convenience
+export { errorHandler };
+
 // Error types for better categorization
 export enum ErrorType {
   NETWORK_ERROR = 'NETWORK_ERROR',
@@ -150,7 +153,7 @@ export const withRetry = async <T>(
   options: Partial<RetryOptions> = {}
 ): Promise<T> => {
   const config = { ...defaultRetryOptions, ...options };
-  let lastError: AppError;
+  let lastError: AppError | undefined;
 
   for (let attempt = 0; attempt <= config.maxRetries; attempt++) {
     try {
@@ -181,7 +184,8 @@ export const withRetry = async <T>(
     }
   }
 
-  throw lastError!;
+  // This should never be reached due to the loop logic, but TypeScript requires it
+  throw new AppError(lastError?.message || 'Operation failed after retries', ErrorType.API_ERROR);
 };
 
 // Circuit breaker pattern for preventing cascading failures
@@ -316,6 +320,12 @@ export const logError = (error: AppError, context?: Record<string, any>) => {
     userAgent: navigator.userAgent,
     url: window.location.href,
   };
+
+  // Use logData for production logging
+  if (process.env.NODE_ENV === 'production') {
+    // Send to logging service in production
+    console.error('Error logged:', logData);
+  }
 
   if (process.env.NODE_ENV === 'development') {
     console.group(`🚨 Error [${error.type}]`);

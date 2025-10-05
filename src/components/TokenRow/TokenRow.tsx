@@ -1,77 +1,9 @@
 import React, { memo, useMemo } from 'react';
-import styled from 'styled-components';
 import { TokenRowProps } from '../../types/components';
 import { PriceChangeIndicator } from '../PriceChangeIndicator';
-import { memoize } from '../../utils/performanceUtils';
+import '../../styles/table.css';
 
-const RowContainer = styled.div`
-  display: flex;
-  align-items: center;
-  padding: 8px 12px;
-  border-bottom: 1px solid #e0e0e0;
-  background-color: #ffffff;
-  font-size: 14px;
-  
-  &:hover {
-    background-color: #f5f5f5;
-  }
-`;
 
-const Cell = styled.div<{ width?: number; align?: 'left' | 'center' | 'right' }>`
-  flex: ${props => props.width ? `0 0 ${props.width}px` : '1'};
-  padding: 0 8px;
-  text-align: ${props => props.align || 'left'};
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-`;
-
-const TokenInfo = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-`;
-
-const TokenName = styled.span`
-  font-weight: 600;
-  color: #333;
-`;
-
-const TokenSymbol = styled.span`
-  font-size: 12px;
-  color: #666;
-`;
-
-const ChainBadge = styled.span`
-  background-color: #e3f2fd;
-  color: #1976d2;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 10px;
-  font-weight: 500;
-  text-transform: uppercase;
-`;
-
-// Removed PriceChange styled component - now using PriceChangeIndicator
-
-const AuditIndicator = styled.div`
-  display: flex;
-  gap: 4px;
-`;
-
-const AuditBadge = styled.span<{ type: 'verified' | 'warning' | 'danger' }>`
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background-color: ${props => {
-    switch (props.type) {
-      case 'verified': return '#4caf50';
-      case 'warning': return '#ff9800';
-      case 'danger': return '#f44336';
-      default: return '#ccc';
-    }
-  }};
-`;
 
 const formatNumber = (num: number, decimals: number = 2): string => {
   if (num >= 1e9) return `${(num / 1e9).toFixed(decimals)}B`;
@@ -119,95 +51,104 @@ export const TokenRow: React.FC<TokenRowProps> = memo(({ token, style }) => {
   );
 
   return (
-    <RowContainer style={style}>
-      <Cell width={200}>
-        <TokenInfo>
-          <TokenName>{token.tokenName}</TokenName>
-          <TokenSymbol>{token.tokenSymbol}</TokenSymbol>
-        </TokenInfo>
-      </Cell>
+    <div 
+      className="crypto-table-row" 
+      style={style}
+      role="row"
+      tabIndex={0}
+      aria-label={`Token ${token.tokenName} (${token.tokenSymbol}) on ${token.chain}`}
+    >
+      <div className="crypto-table-cell crypto-table-col-token align-left" role="cell">
+        <div className="crypto-token-info">
+          <span className="crypto-token-name">{token.tokenName}</span>
+          <span className="crypto-token-symbol">{token.tokenSymbol}</span>
+        </div>
+      </div>
       
-      <Cell width={80} align="center">
-        <ChainBadge>{token.chain}</ChainBadge>
-      </Cell>
+      <div className="crypto-table-cell crypto-table-col-chain align-center hide-sm" role="cell">
+        <span className="crypto-chain-badge">{token.chain}</span>
+      </div>
       
-      <Cell width={120} align="right">
-        {formattedPrice}
-      </Cell>
+      <div className="crypto-table-cell crypto-table-col-price align-right" role="cell">
+        <span aria-label={`Price: $${formattedPrice}`}>${formattedPrice}</span>
+      </div>
       
-      <Cell width={100} align="right">
-        ${formattedMcap}
-      </Cell>
+      <div className="crypto-table-cell crypto-table-col-mcap align-right hide-md" role="cell">
+        <span aria-label={`Market cap: $${formattedMcap}`}>${formattedMcap}</span>
+      </div>
       
-      <Cell width={100} align="right">
-        ${formattedVolume}
-      </Cell>
+      <div className="crypto-table-cell crypto-table-col-volume align-right hide-md" role="cell">
+        <span aria-label={`Volume: $${formattedVolume}`}>${formattedVolume}</span>
+      </div>
       
-      <Cell width={80} align="right">
+      <div className="crypto-table-cell crypto-table-col-change align-right hide-lg" role="cell">
         <PriceChangeIndicator 
           value={token.priceChangePcs["5m"]} 
           decimals={1}
           size="small"
         />
-      </Cell>
+      </div>
       
-      <Cell width={80} align="right">
+      <div className="crypto-table-cell crypto-table-col-change align-right hide-lg" role="cell">
         <PriceChangeIndicator 
           value={token.priceChangePcs["1h"]} 
           decimals={1}
           size="small"
         />
-      </Cell>
+      </div>
       
-      <Cell width={80} align="right">
+      <div className="crypto-table-cell crypto-table-col-change align-right hide-lg" role="cell">
         <PriceChangeIndicator 
           value={token.priceChangePcs["6h"]} 
           decimals={1}
           size="small"
         />
-      </Cell>
+      </div>
       
-      <Cell width={80} align="right">
+      <div className="crypto-table-cell crypto-table-col-change align-right" role="cell">
         <PriceChangeIndicator 
           value={token.priceChangePcs["24h"]} 
           decimals={1}
           size="small"
         />
-      </Cell>
+      </div>
       
-      <Cell width={80} align="center">
-        {token.transactions.buys}/{token.transactions.sells}
-      </Cell>
+      <div className="crypto-table-cell crypto-table-col-txns align-center hide-md" role="cell">
+        <span aria-label={`Transactions: ${token.transactions.buys} buys, ${token.transactions.sells} sells`}>
+          {token.transactions.buys}/{token.transactions.sells}
+        </span>
+      </div>
       
-      <Cell width={100} align="right">
-        {token.exchange}
-      </Cell>
+      <div className="crypto-table-cell crypto-table-col-exchange align-right hide-lg" role="cell">
+        <span title={token.exchange}>{token.exchange}</span>
+      </div>
       
-      <Cell width={60} align="center">
-        {formattedAge}
-      </Cell>
+      <div className="crypto-table-cell crypto-table-col-age align-center" role="cell">
+        <span aria-label={`Age: ${formattedAge}`}>{formattedAge}</span>
+      </div>
       
-      <Cell width={100} align="right">
-        ${formattedLiquidity}
-      </Cell>
+      <div className="crypto-table-cell crypto-table-col-liquidity align-right hide-lg" role="cell">
+        <span aria-label={`Liquidity: $${formattedLiquidity}`}>${formattedLiquidity}</span>
+      </div>
       
-      <Cell width={80} align="right">
+      <div className="crypto-table-cell crypto-table-col-change align-right hide-lg" role="cell">
         <PriceChangeIndicator 
           value={token.liquidity.changePc} 
           decimals={1}
           size="small"
         />
-      </Cell>
+      </div>
       
-      <Cell width={60} align="center">
-        <AuditIndicator>
-          <AuditBadge 
-            type={auditStatus} 
+      <div className="crypto-table-cell crypto-table-col-audit align-center" role="cell">
+        <div className="crypto-audit-indicator">
+          <span 
+            className={`crypto-audit-badge ${auditStatus}`}
             title={auditTitle}
+            aria-label={`Audit status: ${auditStatus}`}
           />
-        </AuditIndicator>
-      </Cell>
-    </RowContainer>
+        </div>
+      </div>
+    </div>
   );
 });
 

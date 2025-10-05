@@ -278,7 +278,13 @@ export class WebSocketServiceImpl implements WebSocketService {
       }
 
       try {
-        this.ws.send(JSON.stringify(message));
+        // Convert message format from {type, payload} to {event, data}
+        const apiMessage = {
+          event: message.type,
+          data: message.payload
+        };
+        
+        this.ws.send(JSON.stringify(apiMessage));
         this.messageTimes.push(Date.now());
       } catch (error) {
         const wsError = new WebSocketError(
@@ -306,51 +312,69 @@ export class WebSocketServiceImpl implements WebSocketService {
 
   private parseIncomingMessage(data: any): IncomingWebSocketMessage | null {
     try {
-      // Validate basic structure
-      if (!data || typeof data !== 'object' || !data.type || !data.payload) {
+      // Handle different message formats
+      let messageType: string;
+      let messagePayload: any;
+
+      // Check if message has 'event' and 'data' structure (new format)
+      if (data && typeof data === 'object' && data.event && data.data) {
+        messageType = data.event;
+        messagePayload = data.data;
+      }
+      // Check if message has 'type' and 'payload' structure (old format)
+      else if (data && typeof data === 'object' && data.type && data.payload) {
+        messageType = data.type;
+        messagePayload = data.payload;
+      }
+      // Invalid structure
+      else {
         console.warn('Invalid message structure:', data);
         return null;
       }
 
       // Validate message type is one of expected types
       const validTypes = ['tick', 'pair-stats', 'scanner-pairs'];
-      if (!validTypes.includes(data.type)) {
-        console.warn('Unknown message type:', data.type);
+      if (!validTypes.includes(messageType)) {
+        console.warn('Unknown message type:', messageType);
         return null;
       }
 
       // Handle different message types with payload validation
-      if (data.type === 'tick') {
-        if (this.validateTickPayload(data.payload)) {
+      if (messageType === 'tick') {
+        if (this.validateTickPayload(messagePayload)) {
           return {
             type: 'tick',
-            payload: data.payload as TickEventPayload
+            payload: messagePayload as TickEventPayload
           };
         }
       }
       
-      if (data.type === 'pair-stats') {
-        if (this.validatePairStatsPayload(data.payload)) {
+      if (messageType === 'pair-stats') {
+        if (this.validatePairStatsPayload(messagePayload)) {
           return {
             type: 'pair-stats',
-            payload: data.payload as PairStatsMsgData
+            payload: messagePayload as PairStatsMsgData
           };
         }
       }
       
-      if (data.type === 'scanner-pairs') {
-        if (this.validateScannerPairsPayload(data.payload)) {
+      if (messageType === 'scanner-pairs') {
+        if (this.validateScannerPairsPayload(messagePayload)) {
           return {
             type: 'scanner-pairs',
-            payload: data.payload as ScannerPairsEventPayload
+            payload: messagePayload as ScannerPairsEventPayload
           };
         }
       }
-      
-      console.warn('Invalid payload for message type:', data.type, data.payload);
+
+
+
+      // If we reach here, the message type was valid but payload validation failed
+      console.warn('Invalid payload for message type:', messageType, messagePayload);
       return null;
+
     } catch (error) {
-      console.error('Error parsing incoming message:', error);
+      console.error('Error parsing WebSocket message:', error, data);
       return null;
     }
   }
@@ -383,6 +407,8 @@ export class WebSocketServiceImpl implements WebSocketService {
            payload.pairs.length <= 1000 && // Limit array size
            payload.pairs.every((pair: any) => typeof pair === 'string' && pair.length > 0 && pair.length <= 100);
   }
+
+
 
   private validateOutgoingMessage(message: OutgoingWebSocketMessage): boolean {
     if (!message || typeof message !== 'object') {

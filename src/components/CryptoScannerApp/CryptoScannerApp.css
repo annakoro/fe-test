@@ -1,0 +1,204 @@
+/* CryptoScannerApp Styles */
+
+.crypto-scanner-app {
+  min-height: 100vh;
+  background-color: var(--bg-secondary);
+  padding: var(--space-4);
+}
+
+.crypto-scanner-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: var(--space-6);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-6);
+  box-shadow: var(--shadow-lg);
+}
+
+.crypto-scanner-title {
+  margin: 0;
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.crypto-scanner-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.crypto-scanner-filter-section {
+  background: var(--bg-primary);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-light);
+}
+
+.crypto-scanner-tables-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-6);
+}
+
+.crypto-scanner-table-wrapper {
+  background: var(--bg-primary);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-light);
+  min-height: 600px;
+}
+
+.crypto-scanner-table-title {
+  margin: 0 0 var(--space-4) 0;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.crypto-scanner-table-title::before {
+  content: '';
+  width: 4px;
+  height: 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 2px;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .crypto-scanner-tables-section {
+    grid-template-columns: 1fr;
+  }
+  
+  .crypto-scanner-app {
+    padding: var(--space-2);
+  }
+  
+  .crypto-scanner-header {
+    padding: var(--space-4);
+  }
+  
+  .crypto-scanner-title {
+    font-size: var(--font-size-2xl);
+  }
+}
+
+@media (max-width: 768px) {
+  .crypto-scanner-table-wrapper {
+    padding: var(--space-4);
+  }
+  
+  .crypto-scanner-filter-section {
+    padding: var(--space-4);
+  }
+}
+
+/* Loading and Error States */
+.crypto-scanner-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  color: var(--text-secondary);
+}
+
+.crypto-scanner-error {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  color: var(--error-600);
+  text-align: center;
+}
+
+/* Skip Link Styles */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  background: var(--primary-600);
+  color: white;
+  padding: var(--space-2) var(--space-3);
+  text-decoration: none;
+  border-radius: var(--radius-md);
+  z-index: var(--z-tooltip);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  transition: top 0.2s ease;
+}
+
+.skip-link:focus {
+  top: var(--space-2);
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .crypto-scanner-app {
+    background-color: var(--gray-900);
+  }
+  
+  .crypto-scanner-table-wrapper,
+  .crypto-scanner-filter-section {
+    background: var(--gray-800);
+    border-color: var(--gray-700);
+  }
+  
+  .crypto-scanner-title {
+    color: var(--gray-100);
+  }
+  
+  .crypto-scanner-table-title {
+    color: var(--gray-100);
+  }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  .crypto-scanner-header {
+    background: #000000;
+    border: 2px solid #ffffff;
+  }
+  
+  .crypto-scanner-table-wrapper,
+  .crypto-scanner-filter-section {
+    border: 2px solid var(--text-primary);
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .skip-link {
+    transition: none;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .crypto-scanner-app {
+    background: white;
+    padding: 0;
+  }
+  
+  .crypto-scanner-header {
+    background: white;
+    color: black;
+    border: 1px solid black;
+  }
+  
+  .crypto-scanner-tables-section {
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+  }
+  
+  .skip-link {
+    display: none;
+  }
+}

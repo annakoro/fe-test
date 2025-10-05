@@ -186,9 +186,9 @@ export class PerformanceMonitor {
   getAllMetrics(): Record<string, number | null> {
     const result: Record<string, number | null> = {};
     
-    for (const [label] of this.metrics) {
+    Array.from(this.metrics.keys()).forEach(label => {
       result[label] = this.getAverage(label);
-    }
+    });
     
     return result;
   }
@@ -373,11 +373,11 @@ export class TokenDataCache {
     const now = Date.now();
     const expiredKeys: string[] = [];
     
-    for (const [key, accessTime] of this.accessTimes) {
+    Array.from(this.accessTimes.entries()).forEach(([key, accessTime]) => {
       if (now - accessTime > this.maxAge) {
         expiredKeys.push(key);
       }
-    }
+    });
     
     expiredKeys.forEach(key => {
       this.cache.delete(key);
@@ -392,12 +392,12 @@ export class TokenDataCache {
     let oldestKey: string | null = null;
     let oldestTime = Infinity;
     
-    for (const [key, accessTime] of this.accessTimes) {
+    Array.from(this.accessTimes.entries()).forEach(([key, accessTime]) => {
       if (accessTime < oldestTime) {
         oldestTime = accessTime;
         oldestKey = key;
       }
-    }
+    });
     
     if (oldestKey) {
       this.cache.delete(oldestKey);

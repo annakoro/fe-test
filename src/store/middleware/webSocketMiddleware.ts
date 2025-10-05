@@ -1,6 +1,6 @@
 // WebSocket Middleware for Redux
 
-import { Middleware, PayloadAction, Action } from '@reduxjs/toolkit';
+import { Middleware, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../index';
 import { IncomingWebSocketMessage, TickEventPayload, PairStatsMsgData, ScannerPairsEventPayload } from '../../types/websocket';
 import { updateHandlersService } from '../../services/updateHandlers';
