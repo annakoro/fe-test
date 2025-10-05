@@ -5,6 +5,8 @@ import styled from 'styled-components';
 import { VirtualizedTableProps } from '../../types/components';
 import { TokenRow } from '../TokenRow/TokenRow';
 import { TableHeader, TABLE_COLUMNS } from '../TableHeader/TableHeader';
+import { ErrorState } from '../ErrorState';
+import { EmptyState } from '../EmptyState';
 
 const TableContainer = styled.div`
   height: 600px;
@@ -24,48 +26,6 @@ const LoadingContainer = styled.div`
   border-top: 1px solid #dee2e6;
   font-size: 14px;
   color: #6c757d;
-`;
-
-const ErrorContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 200px;
-  background-color: #fff5f5;
-  border: 1px solid #fed7d7;
-  border-radius: 8px;
-  margin: 16px;
-`;
-
-const ErrorMessage = styled.div`
-  color: #e53e3e;
-  font-size: 16px;
-  font-weight: 500;
-  margin-bottom: 8px;
-`;
-
-const RetryButton = styled.button`
-  background-color: #e53e3e;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  
-  &:hover {
-    background-color: #c53030;
-  }
-`;
-
-const EmptyContainer = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 200px;
-  color: #6c757d;
-  font-size: 16px;
 `;
 
 const ListContainer = styled.div`
@@ -115,7 +75,7 @@ export const VirtualizedTable: React.FC<VirtualizedTableProps> = ({
   const onRowsRendered = useInfiniteLoader({
     isRowLoaded: isItemLoaded,
     rowCount: itemCount,
-    loadMoreRows: async (startIndex: number, stopIndex: number) => {
+    loadMoreRows: async () => {
       await loadMoreItems();
     },
     threshold: 10
@@ -157,15 +117,13 @@ export const VirtualizedTable: React.FC<VirtualizedTableProps> = ({
   if (error && tokenArray.length === 0) {
     return (
       <TableContainer>
-        <ErrorContainer>
-          <ErrorMessage>Failed to load token data</ErrorMessage>
-          <div style={{ color: '#718096', fontSize: '14px', marginBottom: '16px' }}>
-            {error}
-          </div>
-          <RetryButton onClick={handleRetry}>
-            Retry
-          </RetryButton>
-        </ErrorContainer>
+        <ErrorState
+          title="Failed to load token data"
+          message={error}
+          onRetry={handleRetry}
+          variant="default"
+          size="medium"
+        />
       </TableContainer>
     );
   }
@@ -179,9 +137,19 @@ export const VirtualizedTable: React.FC<VirtualizedTableProps> = ({
           sortConfig={sortConfig}
           onSort={onSort}
         />
-        <EmptyContainer>
-          No tokens found matching your filters
-        </EmptyContainer>
+        <EmptyState
+          title="No tokens found"
+          message="No tokens match your current filters. Try adjusting your filter criteria."
+          variant="compact"
+          size="medium"
+          actions={[
+            {
+              label: 'Clear Filters',
+              onClick: handleRetry,
+              variant: 'secondary'
+            }
+          ]}
+        />
       </TableContainer>
     );
   }

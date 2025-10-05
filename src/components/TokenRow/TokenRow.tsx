@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { TokenRowProps } from '../../types/components';
+import { PriceChangeIndicator } from '../PriceChangeIndicator';
 
 const RowContainer = styled.div`
   display: flex;
@@ -50,10 +51,7 @@ const ChainBadge = styled.span`
   text-transform: uppercase;
 `;
 
-const PriceChange = styled.span<{ $positive: boolean }>`
-  color: ${props => props.$positive ? '#4caf50' : '#f44336'};
-  font-weight: 500;
-`;
+// Removed PriceChange styled component - now using PriceChangeIndicator
 
 const AuditIndicator = styled.div`
   display: flex;
@@ -131,27 +129,35 @@ export const TokenRow: React.FC<TokenRowProps> = ({ token, style }) => {
       </Cell>
       
       <Cell width={80} align="right">
-        <PriceChange $positive={token.priceChangePcs["5m"] >= 0}>
-          {token.priceChangePcs["5m"] >= 0 ? '+' : ''}{token.priceChangePcs["5m"].toFixed(1)}%
-        </PriceChange>
+        <PriceChangeIndicator 
+          value={token.priceChangePcs["5m"]} 
+          decimals={1}
+          size="small"
+        />
       </Cell>
       
       <Cell width={80} align="right">
-        <PriceChange $positive={token.priceChangePcs["1h"] >= 0}>
-          {token.priceChangePcs["1h"] >= 0 ? '+' : ''}{token.priceChangePcs["1h"].toFixed(1)}%
-        </PriceChange>
+        <PriceChangeIndicator 
+          value={token.priceChangePcs["1h"]} 
+          decimals={1}
+          size="small"
+        />
       </Cell>
       
       <Cell width={80} align="right">
-        <PriceChange $positive={token.priceChangePcs["6h"] >= 0}>
-          {token.priceChangePcs["6h"] >= 0 ? '+' : ''}{token.priceChangePcs["6h"].toFixed(1)}%
-        </PriceChange>
+        <PriceChangeIndicator 
+          value={token.priceChangePcs["6h"]} 
+          decimals={1}
+          size="small"
+        />
       </Cell>
       
       <Cell width={80} align="right">
-        <PriceChange $positive={token.priceChangePcs["24h"] >= 0}>
-          {token.priceChangePcs["24h"] >= 0 ? '+' : ''}{token.priceChangePcs["24h"].toFixed(1)}%
-        </PriceChange>
+        <PriceChangeIndicator 
+          value={token.priceChangePcs["24h"]} 
+          decimals={1}
+          size="small"
+        />
       </Cell>
       
       <Cell width={80} align="center">
@@ -171,9 +177,11 @@ export const TokenRow: React.FC<TokenRowProps> = ({ token, style }) => {
       </Cell>
       
       <Cell width={80} align="right">
-        <PriceChange $positive={token.liquidity.changePc >= 0}>
-          {token.liquidity.changePc >= 0 ? '+' : ''}{token.liquidity.changePc.toFixed(1)}%
-        </PriceChange>
+        <PriceChangeIndicator 
+          value={token.liquidity.changePc} 
+          decimals={1}
+          size="small"
+        />
       </Cell>
       
       <Cell width={60} align="center">

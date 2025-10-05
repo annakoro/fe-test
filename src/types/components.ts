@@ -39,3 +39,46 @@ export interface StatusIndicatorProps {
   loading: boolean;
   error: string | null;
 }
+
+export interface LoadingStateProps {
+  variant?: 'default' | 'inline' | 'overlay' | 'skeleton';
+  size?: 'small' | 'medium' | 'large';
+  message?: string;
+  rowCount?: number;
+}
+
+export interface ErrorStateProps {
+  title?: string;
+  message: string;
+  variant?: 'default' | 'inline' | 'banner';
+  size?: 'small' | 'medium' | 'large';
+  onRetry?: () => void;
+  onDismiss?: () => void;
+  retryLabel?: string;
+  showDismiss?: boolean;
+  retrying?: boolean;
+}
+
+export interface EmptyStateProps {
+  icon?: React.ReactNode;
+  title?: string;
+  message: string;
+  variant?: 'default' | 'compact';
+  size?: 'small' | 'medium' | 'large';
+  actions?: Array<{
+    label: string;
+    onClick: () => void;
+    variant?: 'primary' | 'secondary';
+  }>;
+}
+
+export interface PriceChangeIndicatorProps {
+  value: number;
+  showIcon?: boolean;
+  showSign?: boolean;
+  variant?: 'default' | 'bold' | 'subtle';
+  size?: 'small' | 'medium' | 'large';
+  decimals?: number;
+  suffix?: string;
+  className?: string;
+}

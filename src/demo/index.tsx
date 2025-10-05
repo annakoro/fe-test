@@ -4,9 +4,10 @@ import { FilterPanelDemo } from './FilterPanelDemo';
 import { VirtualizedTableDemo } from './VirtualizedTableDemo';
 import { SortingDemo } from './SortingDemo';
 import { TableComponentsDemo } from './TableComponentsDemo';
+import { VisualFeedbackDemo } from './VisualFeedbackDemo';
 
 const DemoApp: React.FC = () => {
-  const [activeDemo, setActiveDemo] = useState<'filter' | 'table' | 'sorting' | 'task10'>('task10');
+  const [activeDemo, setActiveDemo] = useState<'filter' | 'table' | 'sorting' | 'task10' | 'visual'>('visual');
 
   return (
     <div>
@@ -56,6 +57,7 @@ const DemoApp: React.FC = () => {
         <button 
           onClick={() => setActiveDemo('task10')}
           style={{ 
+            marginRight: '10px',
             backgroundColor: activeDemo === 'task10' ? '#007bff' : '#f8f9fa',
             color: activeDemo === 'task10' ? 'white' : 'black',
             border: '1px solid #ccc',
@@ -66,12 +68,26 @@ const DemoApp: React.FC = () => {
         >
           Task 10: Table Components
         </button>
+        <button 
+          onClick={() => setActiveDemo('visual')}
+          style={{ 
+            backgroundColor: activeDemo === 'visual' ? '#007bff' : '#f8f9fa',
+            color: activeDemo === 'visual' ? 'white' : 'black',
+            border: '1px solid #ccc',
+            padding: '8px 16px',
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}
+        >
+          Task 11: Visual Feedback
+        </button>
       </nav>
       
       {activeDemo === 'filter' && <FilterPanelDemo />}
       {activeDemo === 'table' && <VirtualizedTableDemo />}
       {activeDemo === 'sorting' && <SortingDemo />}
       {activeDemo === 'task10' && <TableComponentsDemo />}
+      {activeDemo === 'visual' && <VisualFeedbackDemo />}
     </div>
   );
 };
